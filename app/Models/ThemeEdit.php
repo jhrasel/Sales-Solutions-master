@@ -1,4 +1,4 @@
-<?php /** @noinspection PhpUnused */
+<?php /** @noinspection Php Unused */
 
 namespace App\Models;
 

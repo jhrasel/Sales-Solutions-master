@@ -72,7 +72,6 @@ class SettingController extends MerchantBaseController
                 'msg' => 'merchant setting business information update successfully',
                 'data' => $shop,
             ], 200);
-
     }
 
     public function owner_info_update(MerchantSettingRequest $request)
@@ -401,6 +400,41 @@ class SettingController extends MerchantBaseController
                 'success' => true,
                 'msg' => 'Domain verify meta update successfully',
                 'data' => $shop,
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'msg' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+
+    public function domain_request(MerchantSettingRequest $request)
+    {
+
+        try {
+            DB::beginTransaction();
+            $merchant = User::where('role', 'merchant')->find(auth()->user()->id);
+            if (!$merchant) {
+                return response()->json([
+                    'success' => false,
+                    'msg' =>  'Merchant not Found',
+                ], 404);
+            }
+
+            $shop = Shop::where('user_id', $merchant->id)->first();
+            $shop->shop_id = $request->shop_id;
+            $shop->domain_request = $request->domain_request;
+            $shop->domain_status = $request->input('domain_status');
+            $shop->save();
+
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'msg' => 'Domain request successfully added.',
+                'data' =>    $shop,
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
