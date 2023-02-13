@@ -9,7 +9,6 @@ use App\Http\Controllers\API\V1\Client\Page\PageController;
 use App\Http\Controllers\API\V1\Client\Product\ProductController as ClientProduct;
 use App\Http\Controllers\API\V1\Client\SalesTarget\SalesTargetController;
 use App\Http\Controllers\API\V1\Client\Setting\SettingController as MerchantSetting;
-use App\Http\Controllers\API\V1\Client\Shop\ShopController;
 use App\Http\Controllers\API\V1\Client\Slider\SliderController as ClientSlider;
 use App\Http\Controllers\API\V1\Client\Stock\Inventory\InventoryController;
 use App\Http\Controllers\API\V1\Client\Stock\ProductReturn\ProductReturnController;
@@ -43,14 +42,14 @@ Route::prefix('v1/customer')->name('customer.')->group(function () {
     Route::get('products', [\App\Http\Controllers\API\V1\Customer\ProductController::class, 'index'])->name('products.index');
     Route::get('products/{id}', [\App\Http\Controllers\API\V1\Customer\ProductController::class, 'show'])->name('products.show');
     Route::post('products/search', [\App\Http\Controllers\API\V1\Customer\ProductController::class, 'search'])->name('products.search');
+    Route::get('top-selling-product', [\App\Http\Controllers\API\V1\Client\TopSellingProduct\TopSellingProduct::class, 'customer_index']);
 
     //Orders
     Route::post('/order/store', [\App\Http\Controllers\API\V1\Customer\OrderController::class, 'store'])->name('order.store');
     Route::get('/order/{id}/details', [\App\Http\Controllers\API\V1\Customer\OrderController::class, 'show'])->name('order.details');
 
-    //top-selling product
-    Route::get('top-selling-product', [\App\Http\Controllers\API\V1\Client\TopSellingProduct\TopSellingProduct::class, 'customer_index']);
 
+    //Customer Auth
     Route::post('/register', [\App\Http\Controllers\API\V1\Customer\AuthController::class, 'register']);
     Route::post('/login', [\App\Http\Controllers\API\V1\Customer\AuthController::class, 'login']);
 });
@@ -59,13 +58,12 @@ Route::prefix('v1/customer')->name('customer.')->group(function () {
 //merchant api
 
 Route::group(['prefix' => 'v1'], function () {
-    Route::post('/signup', [LoginController::class, 'register']);
-    Route::post('/auth/verify', [LoginController::class, 'verify']);
-    Route::post('/resend/otp', [LoginController::class, 'resendOTP']);
-
-    Route::get('/device/{ip}/check/{browser}', [LoginController::class, 'checkIp']);
-    Route::post('/shops/info', [ShopController::class, 'index']);
+    Route::post('/signup', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'register']);
+    Route::post('/auth/verify', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'verify']);
+    Route::post('/resend/otp', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'resendOTP']);
+    Route::post('/shops/info', [\App\Http\Controllers\API\V1\Client\Shop\ShopController::class, 'index']);
     Route::get('/page/{page}', [\App\Http\Controllers\API\V1\PageController::class, 'show']);
+    Route::get('/device/{ip}/check/{browser}', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'checkIp']);
 });
 
 
@@ -85,6 +83,8 @@ Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(funct
         Route::post('business-info/update', [MerchantSetting::class, 'business_info_update'])->name('business.info.update');
         Route::post('pixel/update', [MerchantSetting::class, 'pixel_update'])->name('pixel.update');
         Route::post('domain-meta/update', [MerchantSetting::class, 'domain_verify'])->name('domain.meta.update');
+        Route::post('/advance-payment/status/update', [MerchantSetting::class, 'updateAdvancePaymentStatus']);
+        Route::get('/advance-payment/status', [MerchantSetting::class, 'getAdvancePaymentStatus']);
 
         //owner info
         Route::get('owner-info', [MerchantSetting::class, 'owner_info'])->name('owner.info');
@@ -115,6 +115,8 @@ Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(funct
 
     Route::get('sales-target', [SalesTargetController::class, 'sales_target'])->name('sales.target');
     Route::post('sales-target/update', [SalesTargetController::class, 'sales_target_update'])->name('sales.target.update');
+
+
     Route::post('orders/status/update', [ClientOrder::class, 'order_status_update'])->name('orders.status.update');
     Route::get('/order-invoice', [ClientOrder::class, 'order_invoice'])->name('order.invoice');
     Route::post('/order/follow-up/{id}/update', [ClientOrder::class, 'updateFollowup'])->name('order.follow_up');
@@ -149,14 +151,10 @@ Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(funct
         Route::get('/list/{page}', [ThemeController::class, 'getListByPage']);
         Route::post('/custom/store', [ThemeController::class, 'store']);
         Route::post('/custom/{id}/update', [ThemeController::class, 'update']);
-
-        Route::post('/');
-
     });
 
 
     Route::group(['prefix' => 'courier'], function () {
-
         Route::get('/list', [CourierController::class, 'index']);
         Route::post('/provider', [CourierController::class, 'store']);
         Route::post('/send-order', [CourierController::class, 'sendOrderToCourier']);
