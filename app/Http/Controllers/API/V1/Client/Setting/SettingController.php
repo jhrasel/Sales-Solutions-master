@@ -354,7 +354,6 @@ class SettingController extends MerchantBaseController
             }
 
             $shop = Shop::where('user_id', $merchant->id)->first();
-            $shop->name = $request->shop_name;
             $shop->shop_id = $request->shop_id;
             $shop->fb_pixel = $request->fb_pixel;
             $shop->c_api = $request->c_api;
@@ -391,7 +390,6 @@ class SettingController extends MerchantBaseController
             }
 
             $shop = Shop::query()->where('user_id', $merchant->id)->first();
-            $shop->name = $request->shop_name;
             $shop->shop_id = $request->shop_id;
             $shop->domain_verify = $request->domain_verify;
             $shop->save();
