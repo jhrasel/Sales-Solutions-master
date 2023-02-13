@@ -16,7 +16,7 @@
     <!-- CSS Link -->
     <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/owl.carousel.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/login.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
     <link rel="stylesheet" href="{{ asset('css/material-design-iconic-font.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/media.css') }}">
@@ -24,50 +24,8 @@
 </head>
 <body>
 
-<section id="login">
 
-    <div class="container">
-
-        <div class="row">
-
-            @yield('content')
-
-            <div class="col-lg-6">
-
-                <div class="right_login">
-
-                    <div class="right_login_content">
-
-                        <div class="owl-carousel owl-theme">
-
-                            <!-- item -->
-                            <div class="item">
-                                <img src="{{ asset('images/login_right.png') }}" alt="">
-                            </div>
-
-                            <!-- item -->
-                            <div class="item">
-                                <img src="{{ asset('images/login_right.png') }}" alt="">
-                            </div>
-
-                            <!-- item -->
-                            <div class="item">
-                                <img src="{{ asset('images/login_right.png') }}" alt="">
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
+    @yield('content')
 
 
 <script src="{{ asset('js/jquery-1.12.4.min.js') }}"></script>

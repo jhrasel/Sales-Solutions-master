@@ -1,8 +1,9 @@
-<?php
+<?php /** @noinspection ALL */
 
 namespace App\Http\Controllers\Admin\Auth;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminBaseController;
+use App\Http\Controllers\MerchantBaseController;
 use App\Http\Requests\LoginRequest;
 use App\Models\User;
 use Illuminate\Contracts\Foundation\Application;
@@ -11,14 +12,14 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 
 
-class LoginController extends Controller
+class LoginController extends AdminBaseController
 {
     use AuthenticatesUsers;
 
@@ -36,9 +37,10 @@ class LoginController extends Controller
      * Authentication for admin with validation request
      *
      * @param LoginRequest $request
+     * @return RedirectResponse
      * @throws ValidationException
      */
-    public function login(LoginRequest $request)
+    public function login(LoginRequest $request): RedirectResponse
     {
 
         if(!$admin = $this->attemptLogin($request)) {
@@ -46,9 +48,6 @@ class LoginController extends Controller
                 'email' => __('auth.failed'),
             ]);
         }
-
-
-        $this->generateToken($admin->id);
 
         return redirect()->route('admin.dashboard');
 
@@ -67,7 +66,6 @@ class LoginController extends Controller
                             ->first();
 
         if($admin && Hash::check($request->input('password'), $admin->password)) {
-
             Auth::login($admin);
             return $admin;
         }

@@ -29,8 +29,6 @@ class MerchantRegister extends FormRequest
             'name' => ['required'],
             'email' => ['required', Rule::unique('users')],
             'phone' => ['required', Rule::unique('users')],
-            'shop_name' => ['required', 'max:30', Rule::unique('shops', 'name')],
-            'domain' => ['required', 'max:50', Rule::unique('shops')],
             'password' => ['required', 'confirmed', Password::default()]
         ];
     }

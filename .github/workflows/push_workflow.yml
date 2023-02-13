@@ -10,14 +10,14 @@ jobs:
     steps:
       - name: 🚚 Get latest code
         uses: actions/checkout@v2
-      
+
       - name: Install Packages
         run: composer install --no-dev
       - name: FTP-Deploy-Action
         uses: SamKirkland/FTP-Deploy-Action@4.3.2
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: master_dev@salesolutionbd.com
-          password: master_dev@@##
-          protocol: ftps
-          port: 21 # todo replace with your web hosts ftps port
+          server: web.funnelliner.com
+          username: funnel_liner
+          password: Aq$kePH9zZ
+          protocol: ftp
+          port: 22 # todo replace with your web hosts ftps port

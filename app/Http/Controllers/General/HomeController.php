@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\General;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Controllers\MerchantBaseController;
 
-class HomeControler extends Controller
+
+class HomeController extends MerchantBaseController
 {
     /**
      * Landing Page

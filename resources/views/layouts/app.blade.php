@@ -21,16 +21,24 @@
     <link rel="stylesheet" href="{{ asset('css/material-design-iconic-font.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/media.css') }}">
 
+
+
 </head>
 <body>
 
-@include('panel.partials.__sidebar')
-@include('panel.partials.__header')
+<div>
+    @include('panel.partials.__sidebar')
+    @include('panel.partials.__header')
 
-<div class="section_gaps"></div>
+    <div class="section_gaps"></div>
 
-@yield('content')
+    <div id="app">
+        @yield('content')
+    </div>
 
+
+</div>
+<script src="{{ mix('/js/app.js') }}"></script>
 <script src="{{ asset('js/jquery-1.12.4.min.js') }}"></script>
 
 <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
