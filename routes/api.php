@@ -72,6 +72,7 @@ Route::post('/login', [LoginController::class, 'merchant_login'])->name('merchan
 Route::group(['prefix' => 'v1/client'], function () {
     Route::post('forget-password', [ForgetPasswordController::class, 'forgetPassword']);
     Route::post('/otp-verify', [ForgetPasswordController::class, 'verifyOtp']);
+    Route::get('/themes/list/{page}', [ThemeController::class, 'getListByPage']);
 });
 
 Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(function () {
@@ -148,7 +149,6 @@ Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(funct
         Route::post('/import-theme', [ThemeController::class, 'import']);
         Route::post('/merchant/themes', [ThemeController::class, 'getMerchantsTheme']);
 
-        Route::get('/list/{page}', [ThemeController::class, 'getListByPage']);
         Route::post('/custom/store', [ThemeController::class, 'store']);
         Route::post('/custom/{id}/update', [ThemeController::class, 'update']);
     });
