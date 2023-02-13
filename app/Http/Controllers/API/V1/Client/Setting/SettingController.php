@@ -4,102 +4,75 @@ namespace App\Http\Controllers\API\V1\Client\Setting;
 
 use App\Http\Controllers\MerchantBaseController;
 use App\Http\Requests\MerchantSettingRequest;
+use App\Http\Resources\AdvancePaymentResource;
 use App\Models\Media;
 use App\Models\MerchantInfo;
 use App\Models\Shop;
 use App\Models\User;
 use App\Models\WebsiteSetting;
+use App\Traits\sendApiResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 
 class SettingController extends MerchantBaseController
 {
-    public function business_info(MerchantSettingRequest $request)
+	use sendApiResponse;
+    public function business_info(MerchantSettingRequest $request): JsonResponse
     {
-        try {
-            DB::beginTransaction();
-            $merchant = User::where('role', 'merchant')->find(auth()->user()->id);
-            if (!$merchant) {
-                return response()->json([
-                    'success' => false,
-                    'msg' =>  'Merchant not Found',
-                ], 404);
-            }
-            $shop  = Shop::with('shop_logo')->where('user_id', $merchant->id)->first();
-            if (!$shop) {
-                return response()->json([
-                    'success' => false,
-                    'msg' =>  'Shop not Found',
-                ], 404);
-            }
-
-            DB::commit();
-            return response()->json([
-                'success' => true,
-                'data' =>    $shop,
-            ], 200);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'msg' =>   $e->getMessage(),
-            ], 400);
+        $merchant = User::query()->where('role', 'merchant')->find(auth()->id());
+        if (!$merchant) {
+            return response()->json(['success' => false, 'msg' => 'Merchant not Found',], 200);
         }
+        $shop = Shop::with('shop_logo')->where('user_id', $merchant->id)->first();
+        if (!$shop) {
+            return response()->json(['success' => false, 'msg' => 'Shop not Found',], 200);
+        }
+        return response()->json(['success' => true, 'data' => $shop], 200);
     }
 
 
-    public function business_info_update(MerchantSettingRequest $request)
+    public function business_info_update(MerchantSettingRequest $request): JsonResponse
     {
 
-        try {
-            DB::beginTransaction();
-            $merchant = User::where('role', 'merchant')->find(auth()->user()->id);
+        $merchant = User::query()->where('role', 'merchant')->find(auth()->id());
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
-                    'msg' =>  'Merchant not Found',
+                    'msg' => 'Merchant not Found',
                 ], 404);
             }
 
-            $shop = Shop::where('user_id', $merchant->id)->first();
-            $shop->name = $request->shop_name;
-            $shop->address = $request->shop_address;
-            $shop->shop_id = $request->shop_id;
-            $shop->shop_meta_title = $request->shop_meta_title;
-            $shop->shop_meta_description = $request->shop_meta_description;
+            $shop = Shop::query()->where('shop_id', $request->header('shop-id'))->first();
+            $shop->name = $request->input('shop_name');
+            $shop->address = $request->input('shop_address');
+            $shop->shop_id = $request->header('shop-id');
+            $shop->shop_meta_title = $request->input('shop_meta_title');
+            $shop->shop_meta_description = $request->input('shop_meta_description');
             $shop->save();
 
             //store shop logo
-            if($request->shop_logo == null){
-            }else{
-                
-            $mainImageName = time() . '_shop_logo.' . $request->shop_logo->extension();
-            
-            
-            $request->shop_logo->move(public_path('images'), $mainImageName);
-            $media = new Media();
-            $media->name = '/images/' . $mainImageName;
-            $media->parent_id = $shop->id;
-            $media->type = 'shop_logo';
-            $media->save();
+            if ($request->hasFile('shop_logo')) {
 
-            $shop['logo'] = $media->name;
-             }
+                $mainImageName = time() . '_shop_logo.' . $request->file('shop_logo')->getClientOriginalExtension();
 
-            DB::commit();
+                $request->shop_logo->move(public_path('images'), $mainImageName);
+                $media = new Media();
+                $media->name = '/images/' . $mainImageName;
+                $media->parent_id = $shop->id;
+                $media->type = 'shop_logo';
+                $media->save();
+
+                $shop['logo'] = $media->name;
+            }
+
             return response()->json([
                 'success' => true,
                 'msg' => 'merchant setting business information update successfully',
-                'data' =>    $shop,
+                'data' => $shop,
             ], 200);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'msg' =>   $e->getMessage(),
-            ], 400);
-        }
     }
 
     public function owner_info_update(MerchantSettingRequest $request)
@@ -111,7 +84,7 @@ class SettingController extends MerchantBaseController
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
-                    'msg' =>  'Merchant not Found',
+                    'msg' => 'Merchant not Found',
                 ], 404);
             }
 
@@ -134,18 +107,17 @@ class SettingController extends MerchantBaseController
             ];
 
 
-
             DB::commit();
             return response()->json([
                 'success' => true,
                 'msg' => 'merchant setting owner information update successfully',
-                'data' =>    $ownerInfo,
+                'data' => $ownerInfo,
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'msg' =>   $e->getMessage(),
+                'msg' => $e->getMessage(),
             ], 400);
         }
     }
@@ -158,15 +130,15 @@ class SettingController extends MerchantBaseController
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
-                    'msg' =>  'Merchant not Found',
+                    'msg' => 'Merchant not Found',
                 ], 404);
             }
 
-            $merchantInfo  = MerchantInfo::where('user_id', $merchant->id)->first();
+            $merchantInfo = MerchantInfo::where('user_id', $merchant->id)->first();
             if (!$merchantInfo) {
                 return response()->json([
                     'success' => false,
-                    'msg' =>  'Merchant info not found',
+                    'msg' => 'Merchant info not found',
                 ], 404);
             }
 
@@ -182,13 +154,13 @@ class SettingController extends MerchantBaseController
             DB::commit();
             return response()->json([
                 'success' => true,
-                'data' =>    $ownerInfo,
+                'data' => $ownerInfo,
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'msg' =>   $e->getMessage(),
+                'msg' => $e->getMessage(),
             ], 400);
         }
     }
@@ -201,7 +173,7 @@ class SettingController extends MerchantBaseController
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
-                    'msg' =>  'Merchant not Found',
+                    'msg' => 'Merchant not Found',
                 ], 404);
             }
 
@@ -209,7 +181,7 @@ class SettingController extends MerchantBaseController
             if (!Hash::check($request->old_password, $merchant->password)) {
                 return response()->json([
                     'success' => false,
-                    'msg' =>  'Old Password Doesn\'t match!',
+                    'msg' => 'Old Password Doesn\'t match!',
                 ], 404);
             }
 
@@ -227,7 +199,7 @@ class SettingController extends MerchantBaseController
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'msg' =>   $e->getMessage(),
+                'msg' => $e->getMessage(),
             ], 400);
         }
     }
@@ -237,45 +209,44 @@ class SettingController extends MerchantBaseController
     {
         try {
 
-            $merchant = User::where('role', 'merchant')->find(auth()->user()->id);
+            $merchant = User::query()->where('role', 'merchant')->find(auth()->user()->id);
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
-                    'msg' =>  'Merchant not Found',
+                    'msg' => 'Merchant not Found',
                 ], 404);
             }
 
-            $websiteSetting = WebsiteSetting::where('user_id', $merchant->id)->first();
+            $websiteSetting = WebsiteSetting::query()->where('user_id', $merchant->id)->first();
 
             if (!$websiteSetting) {
                 DB::beginTransaction();
                 $web = new WebsiteSetting();
-                if($request->cash_on_delivery){
-                    $web->cash_on_delivery = $request->cash_on_delivery;
+                if ($request->filled('cash_on_delivery')) {
+                    $web->cash_on_delivery = $request->input('cash_on_delivery');
                 }
-                if($request->invoice_id){
-                    $web->invoice_id = $request->invoice_id;
+                if ($request->filled('invoice_id')) {
+                    $web->invoice_id = $request->input('invoice_id');
                 }
-                if($request->custom_domain){
-                    $web->custom_domain = $request->custom_domain;
+                if ($request->filled('custom_domain')) {
+                    $web->custom_domain = $request->input('custom_domain');
                 }
-                if($request->shop_name){
-                    $web->shop_name = $request->shop_name;
+                if ($request->filled('shop_name')) {
+                    $web->shop_name = $request->input('shop_name');
                 }
-                if($request->shop_address){
-                    $web->shop_address = $request->shop_address;
+                if ($request->filled('shop_address')) {
+                    $web->shop_address = $request->input('shop_address');
                 }
-                if($request->website_shop_id){
-                    $web->website_shop_id = $request->website_shop_id;
+                if ($request->filled('website_shop_id')) {
+                    $web->website_shop_id = $request->input('website_shop_id');
                 }
 
-
-                $web->shop_id = auth()->user()->shop->id;
+                $web->shop_id = $request->header('shop-id');
                 $web->user_id = auth()->user()->id;
-                if($request->meta_title){
+                if ($request->meta_title) {
                     $web->meta_title = $request->meta_title;
                 }
-                if($request->meta_description){
+                if ($request->meta_description) {
                     $web->meta_description = $request->meta_description;
                 }
 
@@ -297,39 +268,39 @@ class SettingController extends MerchantBaseController
                 return response()->json([
                     'success' => true,
                     'msg' => 'Merchant website setting update successfully',
-                    'data' =>    $web,
+                    'data' => $web,
                 ], 200);
             }
 
             $oldLogo = $websiteSetting->website_shop_logo;
             DB::beginTransaction();
 
-            if($request->cash_on_delivery){
+            if ($request->cash_on_delivery) {
                 $websiteSetting->cash_on_delivery = $request->cash_on_delivery;
             }
-            if($request->invoice_id){
+            if ($request->invoice_id) {
                 $websiteSetting->invoice_id = $request->invoice_id;
             }
-            if($request->custom_domain){
+            if ($request->custom_domain) {
                 $websiteSetting->custom_domain = $request->custom_domain;
             }
-            if($request->shop_name){
+            if ($request->shop_name) {
                 $websiteSetting->shop_name = $request->shop_name;
             }
-            if($request->shop_address){
+            if ($request->shop_address) {
                 $websiteSetting->shop_address = $request->shop_address;
             }
-            if($request->website_shop_id){
+            if ($request->website_shop_id) {
                 $websiteSetting->website_shop_id = $request->website_shop_id;
             }
 
 
-            $websiteSetting->shop_id = auth()->user()->shop->id;
+            $websiteSetting->shop_id = $request->header('shop-id');
             $websiteSetting->user_id = auth()->user()->id;
-            if($request->meta_title){
+            if ($request->meta_title) {
                 $websiteSetting->meta_title = $request->meta_title;
             }
-            if($request->meta_description){
+            if ($request->meta_description) {
                 $websiteSetting->meta_description = $request->meta_description;
             }
             $websiteSetting->save();
@@ -354,21 +325,21 @@ class SettingController extends MerchantBaseController
             }
 
 
-
             DB::commit();
             return response()->json([
                 'success' => true,
                 'msg' => 'Merchant website setting update successfully',
-                'data' =>    $websiteSetting,
+                'data' => $websiteSetting,
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'msg' =>   $e->getMessage(),
+                'msg' => $e->getMessage(),
             ], 400);
         }
     }
+
     public function pixel_update(MerchantSettingRequest $request)
     {
 
@@ -378,15 +349,15 @@ class SettingController extends MerchantBaseController
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
-                    'msg' =>  'Merchant not Found',
+                    'msg' => 'Merchant not Found',
                 ], 404);
             }
 
             $shop = Shop::where('user_id', $merchant->id)->first();
             $shop->name = $request->shop_name;
             $shop->shop_id = $request->shop_id;
-	        $shop->fb_pixel = $request->fb_pixel;
-	        $shop->c_api = $request->c_api;
+            $shop->fb_pixel = $request->fb_pixel;
+            $shop->c_api = $request->c_api;
             $shop->test_event = $request->test_event;
             $shop->c_status = $request->c_status;
             $shop->save();
@@ -395,16 +366,17 @@ class SettingController extends MerchantBaseController
             return response()->json([
                 'success' => true,
                 'msg' => 'FB Pixel setting update successfully',
-                'data' =>    $shop,
+                'data' => $shop,
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'msg' =>   $e->getMessage(),
+                'msg' => $e->getMessage(),
             ], 400);
         }
     }
+
     public function domain_verify(MerchantSettingRequest $request)
     {
 
@@ -414,11 +386,11 @@ class SettingController extends MerchantBaseController
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
-                    'msg' =>  'Merchant not Found',
+                    'msg' => 'Merchant not Found',
                 ], 404);
             }
 
-            $shop = Shop::where('user_id', $merchant->id)->first();
+            $shop = Shop::query()->where('user_id', $merchant->id)->first();
             $shop->name = $request->shop_name;
             $shop->shop_id = $request->shop_id;
             $shop->domain_verify = $request->domain_verify;
@@ -428,6 +400,63 @@ class SettingController extends MerchantBaseController
             return response()->json([
                 'success' => true,
                 'msg' => 'Domain verify meta update successfully',
+                'data' => $shop,
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'msg' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function website(): JsonResponse
+    {
+        $merchant = User::query()->where('role', 'merchant')->find(auth()->id());
+        if (!$merchant) {
+            return response()->json([
+                'success' => false,
+                'msg' => 'Merchant not Found',
+            ], 200);
+        }
+        $websiteSetting = WebsiteSetting::with('website_shop_logo')->where('user_id', $merchant->id)->first();
+        if (!$websiteSetting) {
+            return response()->json([
+                'success' => false,
+                'msg' => 'Website setting not Found',
+            ], 200);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $websiteSetting,
+        ], 200);
+
+    }
+    public function domain_request(MerchantSettingRequest $request)
+    {
+
+        try {
+            DB::beginTransaction();
+            $merchant = User::where('role', 'merchant')->find(auth()->user()->id);
+            if (!$merchant) {
+                return response()->json([
+                    'success' => false,
+                    'msg' =>  'Merchant not Found',
+                ], 404);
+            }
+
+            $shop = Shop::where('user_id', $merchant->id)->first();
+            $shop->shop_id = $request->shop_id;
+            $shop->domain_request = $request->domain_request;
+            $shop->domain_status = $request->input('domain_status');
+            $shop->save();
+
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'msg' => 'Domain request successfully added.',
                 'data' =>    $shop,
             ], 200);
         } catch (\Exception $e) {
@@ -438,37 +467,23 @@ class SettingController extends MerchantBaseController
             ], 400);
         }
     }
-    public function website()
+    public function updateAdvancePaymentStatus(Request $request): JsonResponse
     {
-        try {
-            DB::beginTransaction();
-            $merchant = User::where('role', 'merchant')->find(auth()->user()->id);
-            if (!$merchant) {
-                return response()->json([
-                    'success' => false,
-                    'msg' =>  'Merchant not Found',
-                ], 404);
-            }
-            $websiteSetting  = WebsiteSetting::with('website_shop_logo')->where('user_id', $merchant->id)->first();
-            if (!$websiteSetting) {
-                return response()->json([
-                    'success' => false,
-                    'msg' =>  'Website setting not Found',
-                ], 404);
-            }
+        $request->validate([
+            'status' => 'required'
+        ]);
 
+        $shop = WebsiteSetting::query()->where('shop_id', $request->header('shop-id'))->update([
+            'advanced_payment' => $request->input('status')
+        ]);
 
-            DB::commit();
-            return response()->json([
-                'success' => true,
-                'data' =>   $websiteSetting,
-            ], 200);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'msg' =>   $e->getMessage(),
-            ], 400);
-        }
+        return $this->sendApiResponse('', 'status updated successfully');
+    }
+
+    public function getAdvancePaymentStatus(): JsonResponse
+    {
+        $shop = WebsiteSetting::query()->where('shop_id', request()->header('shop-id'))->first();
+
+        return $this->sendApiResponse(new AdvancePaymentResource($shop));
     }
 }
