@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Admin\Auth;
 
-use App\Http\Controllers\AdminBaseController;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 
-class DashboardController extends AdminBaseController
+class DashboardController extends Controller
 {
     public function index()
     {
