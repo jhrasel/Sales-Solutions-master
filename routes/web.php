@@ -20,11 +20,6 @@ if(Carbon::now()->setTimezone('Asia/Dhaka')->format('Y-m-d g:i:s') < Carbon::cre
     })->where('query', '.*');
 }
 
-Route::get('/ip', function (){
-	$ip = request()->headers();
-    return $ip;
-});
-
 Route::get('/', [\App\Http\Controllers\General\HomeController::class, 'index'])->name('home');
 Route::get('/signup', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'index'])->name('merchant.register');
 Route::post('/signup/store', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'register'])->name('merchant.register.store');

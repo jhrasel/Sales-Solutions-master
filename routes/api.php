@@ -44,13 +44,12 @@ Route::prefix('v1/customer')->name('customer.')->group(function () {
     Route::get('products/{id}', [\App\Http\Controllers\API\V1\Customer\ProductController::class, 'show'])->name('products.show');
     Route::post('products/search', [\App\Http\Controllers\API\V1\Customer\ProductController::class, 'search'])->name('products.search');
     Route::get('top-selling-product', [\App\Http\Controllers\API\V1\Client\TopSellingProduct\TopSellingProduct::class, 'customer_index']);
-    
     //Orders
     Route::post('/order/store', [\App\Http\Controllers\API\V1\Customer\OrderController::class, 'store'])->name('order.store');
     Route::get('/order/{id}/details', [\App\Http\Controllers\API\V1\Customer\OrderController::class, 'show'])->name('order.details');
 
-    
 
+    //Customer Auth
     Route::post('/register', [\App\Http\Controllers\API\V1\Customer\AuthController::class, 'register']);
     Route::post('/login', [\App\Http\Controllers\API\V1\Customer\AuthController::class, 'login']);
 });
@@ -122,6 +121,8 @@ Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(funct
 
     Route::get('sales-target', [SalesTargetController::class, 'sales_target'])->name('sales.target');
     Route::post('sales-target/update', [SalesTargetController::class, 'sales_target_update'])->name('sales.target.update');
+
+
     Route::post('orders/status/update', [ClientOrder::class, 'order_status_update'])->name('orders.status.update');
     Route::get('/order-invoice', [ClientOrder::class, 'order_invoice'])->name('order.invoice');
     Route::post('/order/follow-up/{id}/update', [ClientOrder::class, 'updateFollowup'])->name('order.follow_up');
@@ -155,12 +156,10 @@ Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(funct
 
         Route::post('/custom/store', [ThemeController::class, 'store']);
         Route::post('/custom/{id}/update', [ThemeController::class, 'update']);
-       
     });
 
 
     Route::group(['prefix' => 'courier'], function () {
-
         Route::get('/list', [CourierController::class, 'index']);
         Route::post('/provider', [CourierController::class, 'store']);
         Route::post('/send-order', [CourierController::class, 'sendOrderToCourier']);

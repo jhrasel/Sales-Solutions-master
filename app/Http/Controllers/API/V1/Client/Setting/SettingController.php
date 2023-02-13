@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Hash;
 
 class SettingController extends MerchantBaseController
 {
-	use sendApiResponse;
+    use sendApiResponse;
     public function business_info(MerchantSettingRequest $request): JsonResponse
     {
         $merchant = User::query()->where('role', 'merchant')->find(auth()->id());
@@ -36,8 +36,7 @@ class SettingController extends MerchantBaseController
 
     public function business_info_update(MerchantSettingRequest $request): JsonResponse
     {
-
-        $merchant = User::query()->where('role', 'merchant')->find(auth()->id());
+            $merchant = User::query()->where('role', 'merchant')->find(auth()->id());
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
@@ -409,29 +408,7 @@ class SettingController extends MerchantBaseController
         }
     }
 
-    public function website(): JsonResponse
-    {
-        $merchant = User::query()->where('role', 'merchant')->find(auth()->id());
-        if (!$merchant) {
-            return response()->json([
-                'success' => false,
-                'msg' => 'Merchant not Found',
-            ], 200);
-        }
-        $websiteSetting = WebsiteSetting::with('website_shop_logo')->where('user_id', $merchant->id)->first();
-        if (!$websiteSetting) {
-            return response()->json([
-                'success' => false,
-                'msg' => 'Website setting not Found',
-            ], 200);
-        }
 
-        return response()->json([
-            'success' => true,
-            'data' => $websiteSetting,
-        ], 200);
-
-    }
     public function domain_request(MerchantSettingRequest $request)
     {
 
@@ -461,10 +438,35 @@ class SettingController extends MerchantBaseController
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'msg' =>   $e->getMessage(),
+                'msg' => $e->getMessage(),
             ], 400);
         }
     }
+
+    public function website(): JsonResponse
+    {
+        $merchant = User::query()->where('role', 'merchant')->find(auth()->id());
+        if (!$merchant) {
+            return response()->json([
+                'success' => false,
+                'msg' => 'Merchant not Found',
+            ], 200);
+        }
+        $websiteSetting = WebsiteSetting::with('website_shop_logo')->where('user_id', $merchant->id)->first();
+        if (!$websiteSetting) {
+            return response()->json([
+                'success' => false,
+                'msg' => 'Website setting not Found',
+            ], 200);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $websiteSetting,
+        ], 200);
+
+    }
+
     public function updateAdvancePaymentStatus(Request $request): JsonResponse
     {
         $request->validate([
