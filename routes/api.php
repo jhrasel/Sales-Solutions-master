@@ -17,6 +17,7 @@ use App\Http\Controllers\API\V1\Client\SupportTicket\SupportTicketController;
 use App\Http\Controllers\API\V1\Client\TopSellingProduct\TopSellingProduct;
 use App\Http\Controllers\API\V1\Theme\ThemeController;
 use App\Http\Controllers\Merchant\Auth\LoginController;
+use App\Http\Controllers\API\V1\Client\SmsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -43,7 +44,6 @@ Route::prefix('v1/customer')->name('customer.')->group(function () {
     Route::get('products/{id}', [\App\Http\Controllers\API\V1\Customer\ProductController::class, 'show'])->name('products.show');
     Route::post('products/search', [\App\Http\Controllers\API\V1\Customer\ProductController::class, 'search'])->name('products.search');
     Route::get('top-selling-product', [\App\Http\Controllers\API\V1\Client\TopSellingProduct\TopSellingProduct::class, 'customer_index']);
-
     //Orders
     Route::post('/order/store', [\App\Http\Controllers\API\V1\Customer\OrderController::class, 'store'])->name('order.store');
     Route::get('/order/{id}/details', [\App\Http\Controllers\API\V1\Customer\OrderController::class, 'show'])->name('order.details');
@@ -85,6 +85,7 @@ Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(funct
         Route::post('business-info/update', [MerchantSetting::class, 'business_info_update'])->name('business.info.update');
         Route::post('pixel/update', [MerchantSetting::class, 'pixel_update'])->name('pixel.update');
         Route::post('domain-meta/update', [MerchantSetting::class, 'domain_verify'])->name('domain.meta.update');
+        Route::post('domain/update', [MerchantSetting::class, 'domain_request'])->name('domain.request.update');
         Route::post('/advance-payment/status/update', [MerchantSetting::class, 'updateAdvancePaymentStatus']);
         Route::get('/advance-payment/status', [MerchantSetting::class, 'getAdvancePaymentStatus']);
 
@@ -100,6 +101,10 @@ Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(funct
         Route::post('website/update', [MerchantSetting::class, 'website_update'])->name('website.update');
     });
 
+    // SMS Send
+        Route::post('/single-sms-send', [SmsController::class, 'single_sms_send']);
+        Route::post('/multiple-sms-send', [SmsController::class, 'multiple_sms_send']);
+    
     // Support ticket
     Route::group(['prefix' => 'support-ticket'], function () {
         Route::post('/list', [SupportTicketController::class, 'index']);
@@ -164,17 +169,3 @@ Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(funct
 
 
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-

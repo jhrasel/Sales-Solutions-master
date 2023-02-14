@@ -20,7 +20,7 @@ class TopSellingProduct extends Controller
             $merchant = auth()->user();
             $shopID = $merchant->shop->shop_id;
             $orderIds = [];
-            $orders = Order::with('order_details')->where('order_status', 'delivery')->where('shop_id', $shopID)->get();
+            $orders = Order::with('order_details')->where('order_status', 'Confirmed')->where('shop_id', $shopID)->get();
 
             if (!$orders) {
                 return response()->json([
@@ -94,7 +94,7 @@ class TopSellingProduct extends Controller
 
             $shopID = $request->header('shop_id');
             $orderIds = [];
-            $orders = Order::with('order_details')->where('order_status', 'delivery')->where('shop_id', $shopID)->get();
+            $orders = Order::with('order_details')->where('order_status', 'Confirmed')->where('shop_id', $shopID)->get();
 
             if (!$orders) {
                 return response()->json([

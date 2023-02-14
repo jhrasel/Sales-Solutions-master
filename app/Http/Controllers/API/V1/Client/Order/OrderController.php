@@ -138,7 +138,7 @@ class OrderController extends Controller
         return $this->sendApiResponse($order, 'Order Created Successfully');
 
     }
-
+    
     /**
      * Display the specified resource.
      *
@@ -233,6 +233,16 @@ class OrderController extends Controller
                 }
             }
             $order->save();
+
+            $shop = Shop::where('shop_id', $merchant->shop->shop_id)->first();
+
+            if ($shop->sms_balance < 1) {
+
+            } else {
+            $shop->sms_balance = $shop->sms_balance - 1;
+            $shop->sms_sent = $shop->sms_sent + 1;
+            $shop->save();
+
             $user = '20102107';
             $password = 'SES@321';
             $sender_id = 'INFOSMS';
@@ -255,7 +265,7 @@ Thank you.
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $data2);
             $order = curl_exec($ch);
-
+            }
             return response()->json([
                 'success' => true,
                 'msg' => 'Order Status Update Successfully',
