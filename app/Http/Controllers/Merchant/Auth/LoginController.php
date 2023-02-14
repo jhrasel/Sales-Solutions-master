@@ -147,7 +147,7 @@ class LoginController extends MerchantBaseController
             ->first();
 
         if($user && Hash::check($request->input('password'), $user->password)) {
-            $token = $user->createApiToken();
+            $token = $this->generateToken($user->id, $request->header('ipaddress'), $request->header('browsername'));
             return $this->sendApiResponse(new MerchantResource($user), 'Successfully logged in', '', ['token' => $token]);
         } else {
             return $this->sendApiResponse('', 'Unable to sign in with given credentials', 'Unauthorized');
@@ -155,6 +155,18 @@ class LoginController extends MerchantBaseController
 
     }
 
+
+    public function generateToken($merchant, $ip, $browser): string
+    {
+        $token = Str::random(80);
+        $newToken = new MerchantToken();
+        $newToken->user_id = $merchant->id;
+        $newToken->token = $token;
+        $newToken->ip = $ip;
+        $newToken->browser = $browser;
+        $newToken->save();
+        return $token;
+    }
 
     public function merchant_logout(): JsonResponse
     {

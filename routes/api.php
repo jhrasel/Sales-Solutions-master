@@ -73,6 +73,7 @@ Route::group(['prefix' => 'v1/client'], function () {
     Route::post('forget-password', [ForgetPasswordController::class, 'forgetPassword']);
     Route::post('/otp-verify', [ForgetPasswordController::class, 'verifyOtp']);
     Route::get('/themes/list/{page}', [ThemeController::class, 'getListByPage']);
+    Route::post('/update-password', [ForgetPasswordController::class, 'updatePassword']);
 });
 
 Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(function () {

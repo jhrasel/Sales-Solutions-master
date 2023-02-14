@@ -69,14 +69,14 @@ class ThemeController extends Controller
         $data['content'] = $request->input('content');
 
         $theme = ThemeEdit::query()->create($data);
-        if ($request->hasFile('gallery')) {
-            foreach ($request->file('gallery') as $item) {
-                $file = time().'-'.$item->getClientOriginalName();
+        if ($request->input('gallery') !== null) {
+            foreach ($request->input('gallery') as $item) {
+                $file = time().'-'.$item['file_name']->getClientOriginalName();
                 $path = '/themes/images/gallery';
                 $image = $item->storeAs($path, $file, 'local');
                 $gallery = ThemeImage::query()->create([
                     'theme_edit_id' => $theme->id,
-                    'type' => 'gallery',
+                    'type' => $item['type'],
                     'file_name' => $image
                 ]);
             }
@@ -98,14 +98,14 @@ class ThemeController extends Controller
             $data->save();
         }
 
-        if ($request->hasFile('gallery')) {
-            foreach ($request->file('gallery') as $item) {
-                $file = time().'-'.$item->getClientOriginalName();
+        if ($request->input('gallery') !== null) {
+            foreach ($request->input('gallery') as $item) {
+                $file = time().'-'.$item['file_name']->getClientOriginalName();
                 $path = '/themes/images/gallery';
                 $image = $item->storeAs($path, $file, 'local');
                 $gallery = ThemeImage::query()->create([
                     'theme_edit_id' => $id,
-                    'type' => 'gallery',
+                    'type' => $item['type'],
                     'file_name' => $image
                 ]);
             }
