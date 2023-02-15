@@ -1,9 +1,10 @@
-<?php
+<?php /** @noinspection Php Unused */
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ThemeEdit extends Model
 {
@@ -24,8 +25,13 @@ class ThemeEdit extends Model
         return $this->save();
     }
 
-    public function theme()
+    public function theme(): HasMany
     {
-       return $this->hasMany(Theme::class)->where();
+       return $this->hasMany(Theme::class);
+    }
+
+    public function gallery(): HasMany
+    {
+        return $this->hasMany(ThemeImage::class);
     }
 }

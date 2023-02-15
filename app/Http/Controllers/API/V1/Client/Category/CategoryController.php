@@ -25,7 +25,7 @@ class CategoryController extends Controller
     {
         $categories = Category::query()->with('subcategory', 'category_image')
             ->where('parent_id', 0)
-            ->where('shop_id', $request->header('shop_id'))
+            ->where('shop_id', $request->header('shop-id'))
             ->orderByDesc('id')
             ->get();
         if ($categories->isEmpty()) {
@@ -52,15 +52,15 @@ class CategoryController extends Controller
      */
     public function store(CategoryRequest $request): JsonResponse
     {
-        $query = Category::query()->where('shop_id', $request->header('shop_id'))->where('name', $request->input('name'))->first();
+        $query = Category::query()->where('shop_id', $request->header('shop-id'))->where('name', $request->input('name'))->first();
         if ($query) {
             throw validationException::withMessages(['category' => 'This category already exist']);
         }
         $data = $request->except('category_image');
-        $data['slug'] = Str::slug($request->name);
-        $data['shop_id'] = $request->header('shop_id');
+        $data['slug'] = Str::slug($request->input('name'));
+        $data['shop_id'] = $request->header('shop-id');
         $data['parent_id'] = $request->input('parent_id') ?: 0;
-        $data['user_id'] = auth()->user()->id;
+        $data['user_id'] = $request->header('id');
         $category = Category::query()->create($data);
 
         if ($request->hasFile('category_image')) {
@@ -88,7 +88,7 @@ class CategoryController extends Controller
     {
         $category = Category::with('category_image', 'subcategory')
             ->where('id', $id)
-            ->where('shop_id', $request->header('shop_id'))
+            ->where('shop_id', $request->header('shop-id'))
             ->first();
         if (!$category) {
             return $this->sendApiResponse('', 'No category found');

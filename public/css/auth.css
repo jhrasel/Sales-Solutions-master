@@ -260,7 +260,7 @@ button:hover {
 
 .validation-error {
     border-color: var(--bg_color) !important;
-    border: 2px solid;
+    border: 2px solid !important;
 }
 .validation-error-label {
     color: var(--bg_color) !important;
@@ -389,4 +389,3 @@ button:hover {
 .Register ::-webkit-scrollbar-thumb:hover {
     background: var(--bg_color);
 }
-

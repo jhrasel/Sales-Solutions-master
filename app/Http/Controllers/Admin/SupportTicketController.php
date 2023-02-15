@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\AdminBaseController;
 use App\Models\Attachment;
 use App\Models\SupportTicket;
+use App\Models\TicketComment;
 use App\Models\User;
 use App\Traits\sendApiResponse;
 use Carbon\Carbon;
@@ -13,6 +14,8 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+
 class SupportTicketController extends AdminBaseController
 {
     use sendApiResponse;
@@ -87,4 +90,47 @@ class SupportTicketController extends AdminBaseController
 
         return $this->sendApiResponse($support_ticket);
     }
+
+    public function replyToTicket(Request $request, $id): JsonResponse
+    {
+        $request->validate([
+            'content' => 'required'
+        ]);
+
+        $ticket_reply = TicketComment::query()->create([
+            'ticket_id' => $id,
+            'content' => $request->input('content'),
+            'user_id' => auth()->id()
+        ]);
+
+        if($request->hasFile('attachment')) {
+            $fileExt = $request->file('attachment')->getClientOriginalExtension();
+            $size = $request->file('attachment')->getSize();
+            $type = $request->file('attachment')->getMimeType();
+
+            $path = '/upload/support-ticket/reply';
+            $name = Carbon::now()->format('YmdHis') . '-' . uniqid() .'.'.$fileExt;
+            $image = $request->file('attachment')->storeAs($path, $name, 'local');
+
+            $attachment = Attachment::query()->create([
+                'name' => $name,
+                'type' => $type,
+                'size' => $size,
+                'path' => $image,
+            ]);
+            $ticket_reply->attachment_id = $attachment->id;
+            $ticket_reply->save();
+        }
+
+        return $this->sendApiResponse($ticket_reply, 'Reply added successfully');
+    }
+
+    public function download($id)
+    {
+        $attachment = Attachment::query()->findOrFail($id);
+
+        return response()->download($attachment->getAttributes()['path']);
+    }
+
+
 }

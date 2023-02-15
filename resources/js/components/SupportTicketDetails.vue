@@ -59,11 +59,12 @@
                             <!-- Reply Of Ticket -->
                             <div class="TicketDetail nobg">
 
-                                <h3>Reply Of Ticket</h3>
+                                <h3 :class="[!!errors.content && 'validation-error-h']">Reply Of Ticket</h3>
 
                                 <div class="custome_input">
-                                    <textarea name="" rows="6"></textarea>
+                                    <textarea v-model="form.content" :class="[!!errors.content && 'validation-error-textarea' ]" rows="6"  @blur="validate('content')" @keypress="validate('content')"></textarea>
                                 </div>
+                                <span class="validation-error-message" v-if="!!errors.content">{{ errors.content }}</span>
 
                             </div>
 
@@ -73,8 +74,10 @@
                                 <h3>Add Attachment</h3>
 
                                 <div class="custome_input">
-                                    <input type="file">
+                                    <input type="file" @change="fileUpload">
+                                    <span class="validation-error-message" v-if="!!errors.attachment">{{ errors.attachment }}</span>
                                 </div>
+
 
                                 <a @click.prevent="replyToTickets" class="Send">Save</a>
 
@@ -137,47 +140,21 @@
 
                     <div class="col-lg-12">
 
-                        <div class="open_ticket_details_content">
+                        <div class="open_ticket_details_content" v-for="comment in ticket.comments">
 
                             <!-- Ticket Details -->
-                            <div class="TicketDetail">
+                            <div class="TicketDetail" :class="comment.user_id !== ticket.user_id ? 'bg_white' : ''">
 
-                                <h3>Customer Name <span> 22 June,2022 at 12:33 PM</span></h3>
+                                <h3>{{ comment.user.name }}  <span> {{ comment.created_at }}</span></h3>
 
-                                <p>Aliqua id fugiat nostrud irure ex duis ea quis id quis ad et. Sunt qui esse pariatur duis deserunt mollit dolore cillum minim tempor enim. Elit aute irure tempor cupidatat incididunt sint deserunt ut voluptate aute id deserunt nisi. Aliqua id fugiat nostrud irure ex du is ea quis id quis ad et. Sunt qui esse pariatur duis deserunt mollit dolore cillum minim tempor enim. Elit aute irure tempor cupidatat incididunt sint deserunt ut voluptate aute id deserunt nisi. Aliqua id fugiat nostrud irure ex duis ea quis id quis ad et. Sunt qui esse pariatur duis deserunt mollit dolore cillum minim tempor enim. Elit aute irure tempor cupidatat incididunt sint deserunt ut voluptate aute id deserunt nisi. </p>
+                                <p>{{ comment?.content }}</p>
 
-                                <a href="">Download Attachment</a>
+                                <a @click="download(comment.attachment_id)" v-if="comment.attachment_id !== null">Download Attachment</a>
 
                             </div>
 
-                            <!-- Ticket Details -->
-                            <div class="TicketDetail bg_white">
 
-                                <h3>Staff Name <span> 22 June,2022 at 12:33 PM</span></h3>
 
-                                <p>Aliqua id fugiat nostrud irure ex duis ea quis id quis ad et. Sunt qui esse pariatur duis deserunt mollit dolore cillum minim tempor enim. Elit aute irure tempor cupidatat incididunt sint deserunt ut voluptate aute id deserunt nisi. Aliqua id fugiat nostrud irure ex du is ea quis id quis ad et. Sunt qui esse pariatur duis deserunt mollit dolore cillum minim tempor enim. Elit aute irure tempor cupidatat incididunt sint deserunt ut voluptate aute id deserunt nisi. Aliqua id fugiat nostrud irure ex duis ea quis id quis ad et. Sunt qui esse pariatur duis deserunt mollit dolore cillum minim tempor enim. Elit aute irure tempor cupidatat incididunt sint deserunt ut voluptate aute id deserunt nisi. </p>
-
-                                <a href="">Download Attachment</a>
-
-                            </div>
-
-                            <!-- Ticket Details -->
-                            <div class="TicketDetail">
-
-                                <h3>Customer Name <span> 22 June,2022 at 12:33 PM</span></h3>
-
-                                <p>Aliqua id fugiat nostrud irure ex duis ea quis id quis ad et. Sunt qui esse pariatur duis deserunt mollit dolore cillum minim tempor enim. Elit aute irure tempor cupidatat incididunt sint deserunt ut voluptate aute id deserunt nisi. Aliqua id fugiat nostrud irure ex du is ea quis id quis ad et. Sunt qui esse pariatur duis deserunt mollit dolore cillum minim tempor enim. Elit aute irure tempor cupidatat incididunt sint deserunt ut voluptate aute id deserunt nisi. Aliqua id fugiat nostrud irure ex duis ea quis id quis ad et. Sunt qui esse pariatur duis deserunt mollit dolore cillum minim tempor enim. Elit aute irure tempor cupidatat incididunt sint deserunt ut voluptate aute id deserunt nisi. </p>
-
-                            </div>
-
-                            <!-- Ticket Details -->
-                            <div class="TicketDetail bg_white">
-
-                                <h3>Staff Name <span> 22 June,2022 at 12:33 PM</span></h3>
-
-                                <p>Aliqua id fugiat nostrud irure ex duis ea quis id quis ad et. Sunt qui esse pariatur duis deserunt mollit dolore cillum minim tempor enim. Elit aute irure tempor cupidatat incididunt sint deserunt ut voluptate aute id deserunt nisi. Aliqua id fugiat nostrud irure ex du is ea quis id quis ad et. Sunt qui esse pariatur duis deserunt mollit dolore cillum minim tempor enim. Elit aute irure tempor cupidatat incididunt sint deserunt ut voluptate aute id deserunt nisi. Aliqua id fugiat nostrud irure ex duis ea quis id quis ad et. Sunt qui esse pariatur duis deserunt mollit dolore cillum minim tempor enim. Elit aute irure tempor cupidatat incididunt sint deserunt ut voluptate aute id deserunt nisi. </p>
-
-                            </div>
 
                         </div>
 
@@ -194,6 +171,20 @@
 </template>
 
 <script>
+
+import * as yup from "yup";
+
+const ticketsSchema = yup.object().shape({
+    content: yup.string().required().min(6),
+    attachment: yup.mixed().test("type", 'Supported file types Image and PDF only', function (value) {
+        if (value === 'undefined' || value !== null) {
+            return value && (value.type === 'image/jpg' || value.type === 'image/jpeg' || value.type === 'image/png' || value.type === 'application/pdf');
+        } else {
+            return true;
+        }
+
+    })
+});
 export default {
     name: "SupportTicketDetails",
     props: {
@@ -202,6 +193,16 @@ export default {
     data() {
         return {
             ticket: {},
+            form: {
+                ticket_id: null,
+                content: "",
+                attachment: null
+
+            },
+            errors: {
+                content: "",
+                attachment: "",
+            },
         }
     },
     mounted() {
@@ -209,6 +210,16 @@ export default {
 
     },
     methods: {
+        validate(field) {
+            ticketsSchema
+                .validateAt(field, this.form)
+                .then(() => {
+                    this.errors[field] = "";
+                })
+                .catch(err => {
+                    this.errors[field] = err.message;
+                })
+        },
         capitalized(name) {
             const capitalizedFirst = name[0].toUpperCase();
             const rest = name.slice(1);
@@ -217,10 +228,54 @@ export default {
         fetchTicketDetails() {
             axios.get(`/panel/support-ticket/details/${this.uuid}`).then(response => {
                 this.ticket = response.data.data
+                this.form.ticket_id = response.data.data.id
             })
         },
         replyToTickets() {
-            console.log(this.ticket)
+            ticketsSchema
+                .validate(this.form, {abortEarly: false})
+                .then(() => {
+                    this.errors = {};
+
+                    const formData = new FormData();
+                    formData.append('ticket_id', this.form.ticket_id)
+                    formData.append('content', this.form.content)
+                    formData.append('attachment', this.form.attachment)
+
+                    axios.post(`/panel/support-ticket/reply/${this.form.ticket_id}`, formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    }).then(response => {
+
+                        this.form.content = ""
+                        this.fetchTicketDetails()
+                    })
+                })
+                .catch(err => {
+                    err.inner.forEach(error => {
+                        this.errors[error.path] = error.message;
+                    });
+                })
+        },
+        fileUpload(event) {
+            this.form.attachment = event.target["files"][0];
+            this.validate('attachment')
+        },
+        download(id) {
+            axios.get(`/panel/download/${id}/attachment`, {responseType: "blob"}).then(response => {
+
+                console.log(response)
+                const url = window.URL.createObjectURL(new Blob([response.data], {
+                    type: response.data.type
+                }));
+                const link = document.createElement("a");
+                link.href = url;
+                link.setAttribute("download", 'file');
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+            })
         }
 
     },
@@ -228,5 +283,13 @@ export default {
 </script>
 
 <style scoped>
-
+.TicketDetail p {
+    margin-top: 20px !important;
+}
+.validation-error-h {
+    color: #A16CF8 !important;
+}
+.validation-error-textarea {
+    border: 2px solid #A16CF8 !important;
+}
 </style>

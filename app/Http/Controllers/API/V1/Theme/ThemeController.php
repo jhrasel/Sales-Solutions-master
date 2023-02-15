@@ -1,6 +1,4 @@
-<?php /** @noinspection PhpUnhandledExceptionInspection */
-
-/** @noinspection PhpUndefinedFieldInspection */
+<?php
 
 namespace App\Http\Controllers\API\V1\Theme;
 
@@ -9,6 +7,7 @@ use App\Models\ActiveTheme;
 use App\Models\Shop;
 use App\Models\Theme;
 use App\Models\ThemeEdit;
+use App\Models\ThemeImage;
 use App\Traits\sendApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -35,7 +34,7 @@ class ThemeController extends Controller
 
     public function getListByPage(Request $request, $page): JsonResponse
     {
-        $query = ThemeEdit::query()->where('shop_id', $request->header('shop_id'))->where('page', $page)->get();
+        $query = ThemeEdit::query()->with('gallery')->where('shop_id', $request->header('shop-id'))->where('page', $page)->get();
 
         if ($query->isEmpty()) {
             return $this->sendApiResponse('', 'No data available');
@@ -54,9 +53,10 @@ class ThemeController extends Controller
         $data = $request->validate([
             'type' => 'required',
             'page' => 'required',
-            'theme' => 'nullable'
+            'theme' => 'nullable',
+            'menu' => 'nullable',
         ]);
-        $data['shop_id'] = $request->header('shop_id');
+        $data['shop_id'] = $request->header('shop-id');
         if ($request->hasFile('logo')) {
             $file = $request->file('logo')->getClientOriginalName();
             $path = '/themes/images';
@@ -67,6 +67,20 @@ class ThemeController extends Controller
         $data['content'] = $request->input('content');
 
         $theme = ThemeEdit::query()->create($data);
+        if ($request->input('gallery') !== null) {
+            foreach ($request->input('gallery') as $item) {
+                $file = time().'-'.$item['file_name']->getClientOriginalName();
+                $path = '/themes/images/gallery';
+                $image = $item->storeAs($path, $file, 'local');
+                $gallery = ThemeImage::query()->create([
+                    'theme_edit_id' => $theme->id,
+                    'type' => $item['type'],
+                    'file_name' => $image
+                ]);
+            }
+        }
+        $theme->load('gallery');
+
 
         return $this->sendApiResponse($theme, 'Data Created Successfully');
     }
@@ -82,7 +96,21 @@ class ThemeController extends Controller
             $data->save();
         }
 
+        if ($request->input('gallery') !== null) {
+            foreach ($request->input('gallery') as $item) {
+                $file = time().'-'.$item['file_name']->getClientOriginalName();
+                $path = '/themes/images/gallery';
+                $image = $item->storeAs($path, $file, 'local');
+                $gallery = ThemeImage::query()->create([
+                    'theme_edit_id' => $id,
+                    'type' => $item['type'],
+                    'file_name' => $image
+                ]);
+            }
+        }
+
         $data->update($request->except('logo'));
+        $data->load('gallery');
 
         return $this->sendApiResponse($data, 'Data Updated Successfully');
     }
@@ -100,18 +128,18 @@ class ThemeController extends Controller
         }
 
         if ($theme->type === 'multiple') {
-            $import = ActiveTheme::query()->where('shop_id', $request->header('shop_id'))->where('type', 'multiple')->first();
+            $import = ActiveTheme::query()->where('shop_id', $request->header('shop-id'))->where('type', 'multiple')->first();
             if (!$import) {
                 $import = new ActiveTheme();
             }
-            $import->shop_id = $request->header('shop_id');
+            $import->shop_id = $request->header('shop-id');
             $import->theme_id = $theme->id;
             $import->type = 'multiple';
             $import->save();
             $import->load(['theme', 'theme.media']);
         } else {
             $import = ActiveTheme::query()->updateOrCreate([
-                'shop_id' => $request->header('shop_id'),
+                'shop_id' => $request->header('shop-id'),
                 'theme_id' => $theme->id,
                 'type' => $request->input('type')
             ]);
@@ -128,7 +156,7 @@ class ThemeController extends Controller
             'type' => ['required']
         ]);
 
-        $shop = Shop::query()->where('shop_id', $request->header('shop_id'))->first();
+        $shop = Shop::query()->where('shop_id', $request->header('shop-id'))->first();
 
         if (!$shop) {
             throw ValidationException::withMessages([

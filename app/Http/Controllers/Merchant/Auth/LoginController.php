@@ -17,12 +17,9 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Routing\Route;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -83,7 +80,7 @@ class LoginController extends MerchantBaseController
             $merchant->shop()->create([
                 'name' => $request->input('shop_name'),
                 'domain' => $new_domain,
-		        'sms_balance' => "50",
+		'sms_balance' => "50",
                 'shop_id' => mt_rand(111111, 999999),
             ]);
             $merchant->merchantinfo()->create();
@@ -136,7 +133,7 @@ class LoginController extends MerchantBaseController
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 401);
+            return response()->json(['error' => $validator->errors()], 422);
         }
 
         $user = User::query()->with('shop')
@@ -147,7 +144,7 @@ class LoginController extends MerchantBaseController
             ->first();
 
         if($user && Hash::check($request->input('password'), $user->password)) {
-            $token = $user->createApiToken();
+            $token = $this->generateToken($user->id, $request->header('ipaddress'), $request->header('browsername'));
             return $this->sendApiResponse(new MerchantResource($user), 'Successfully logged in', '', ['token' => $token]);
         } else {
             return $this->sendApiResponse('', 'Unable to sign in with given credentials', 'Unauthorized');
@@ -156,10 +153,32 @@ class LoginController extends MerchantBaseController
     }
 
 
-    public function merchant_logout(): JsonResponse
+    public function generateToken($merchant, $ip, $browser): string
     {
-        $userRemoveToken = auth()->user()->removeApiToken();
-        return response()->json(['msg' => $userRemoveToken], 200);
+        $token = Str::random(80);
+        $newToken = new MerchantToken();
+        $newToken->user_id = $merchant;
+        $newToken->token = $token;
+        $newToken->ip = $ip;
+        $newToken->browser = $browser;
+        $newToken->save();
+        return $token;
+    }
+
+    public function merchant_logout(Request $request)
+    {
+        try {
+            $token = Str::replace('Bearer ', '', $request->header('authorization'));
+            $merchant = MerchantToken::query()->where('user_id', $request->header('id'))
+                ->where('token', $token)
+                ->where('ip', $request->header('ipaddress'))
+                ->where('browser', $request->header('browsername'))
+                ->delete();
+            return $this->sendApiResponse('', 'Successfully Logout!');
+
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
 
     }
 
@@ -206,7 +225,6 @@ class LoginController extends MerchantBaseController
     public function checkIp($ip, $browser): JsonResponse
     {
         $user = MerchantToken::query()->where('ip', $ip)->where('browser', $browser)->first();
-
         if(!$user) {
             return $this->sendApiResponse('', 'No user token found with this ip');
         }

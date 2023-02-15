@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\HasPrimaryUuid;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,6 +16,12 @@ class TicketComment extends Model
     protected $keyType = 'string';
 
     protected $guarded = ['id'];
+
+
+    public function getCreatedAtAttribute($value): string
+    {
+        return Carbon::parse($value)->toDayDateTimeString();
+    }
 
     public function support_ticket(): BelongsTo
     {

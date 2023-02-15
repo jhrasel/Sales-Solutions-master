@@ -1,9 +1,8 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 namespace App\Models;
 
 use Carbon\Carbon;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -154,67 +153,5 @@ class User extends Authenticatable
     public function customer_info(): HasOne
     {
         return $this->hasOne(CustomerInfo::class);
-    }
-
-    public function createApiToken(): string
-    {
-        $token = Str::random(64);
-        $this->api_token = $token;
-        $this->save();
-
-        $browser = $this->get_browser(request()->header('User-Agent'));
-        $merchant_tokens = MerchantToken::query()->create([
-            'token' => $token,
-            'user_id' => $this->id,
-            'ip' => request()->ip(),
-            'browser' => $browser
-        ]);
-        return $token;
-    }
-
-    public function removeApiToken(): string
-    {
-        $merchant_tokens = MerchantToken::query()->where('user_id', $this->id)->where('token', $this->api_token)->first();
-        $merchant_tokens->delete();
-        $this->api_token=null;
-        $this->save();
-        return 'Successfully logged out';
-    }
-
-    public function get_browser($value)
-    {
-        $bname = '';
-        if(preg_match('/MSIE/i',$value) && !preg_match('/Opera/i',$value))
-        {
-            $bname = 'Internet Explorer';
-            $ub = "MSIE";
-        }
-        elseif(preg_match('/Firefox/i',$value))
-        {
-            $bname = 'Mozilla Firefox';
-            $ub = "Firefox";
-        }
-        elseif(preg_match('/Chrome/i',$value))
-        {
-            $bname = 'Google Chrome';
-            $ub = "Chrome";
-        }
-        elseif(preg_match('/Safari/i',$value))
-        {
-            $bname = 'Apple Safari';
-            $ub = "Safari";
-        }
-        elseif(preg_match('/Opera/i',$value))
-        {
-            $bname = 'Opera';
-            $ub = "Opera";
-        }
-        elseif(preg_match('/Netscape/i',$value))
-        {
-            $bname = 'Netscape';
-            $ub = "Netscape";
-        }
-
-        return $bname;
     }
 }

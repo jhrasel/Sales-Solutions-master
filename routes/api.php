@@ -9,18 +9,15 @@ use App\Http\Controllers\API\V1\Client\Page\PageController;
 use App\Http\Controllers\API\V1\Client\Product\ProductController as ClientProduct;
 use App\Http\Controllers\API\V1\Client\SalesTarget\SalesTargetController;
 use App\Http\Controllers\API\V1\Client\Setting\SettingController as MerchantSetting;
-use App\Http\Controllers\API\V1\Client\Shop\ShopController;
 use App\Http\Controllers\API\V1\Client\Slider\SliderController as ClientSlider;
 use App\Http\Controllers\API\V1\Client\Stock\Inventory\InventoryController;
 use App\Http\Controllers\API\V1\Client\Stock\ProductReturn\ProductReturnController;
 use App\Http\Controllers\API\V1\Client\Stock\StockIn\StockInController;
 use App\Http\Controllers\API\V1\Client\SupportTicket\SupportTicketController;
 use App\Http\Controllers\API\V1\Client\TopSellingProduct\TopSellingProduct;
-use App\Http\Controllers\API\V1\Customer\AuthController;
-use App\Http\Controllers\API\V1\Customer\CategoryController as CustomerCategory;
-use App\Http\Controllers\API\V1\Customer\ProductController as CustomerProduct;
 use App\Http\Controllers\API\V1\Theme\ThemeController;
 use App\Http\Controllers\Merchant\Auth\LoginController;
+use App\Http\Controllers\API\V1\Client\SmsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -34,50 +31,53 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('v1/page/{page}', [\App\Http\Controllers\API\V1\PageController::class, 'show']);
+
 
 
 //client api
 Route::prefix('v1/customer')->name('customer.')->group(function () {
 
-    Route::get('categories', [CustomerCategory::class, 'index'])->name('categories.index');
-    Route::get('categories/{category}', [CustomerCategory::class, 'show'])->name('categories.show');
+    Route::get('categories', [\App\Http\Controllers\API\V1\Customer\CategoryController::class, 'index'])->name('categories.index');
+    Route::get('categories/{category}', [\App\Http\Controllers\API\V1\Customer\CategoryController::class, 'show'])->name('categories.show');
 
-    Route::get('products', [CustomerProduct::class, 'index'])->name('products.index');
-    Route::get('products/{id}', [CustomerProduct::class, 'show'])->name('products.show');
-    Route::post('products/search', [CustomerProduct::class, 'search'])->name('products.search');
-
+    Route::get('products', [\App\Http\Controllers\API\V1\Customer\ProductController::class, 'index'])->name('products.index');
+    Route::get('products/{id}', [\App\Http\Controllers\API\V1\Customer\ProductController::class, 'show'])->name('products.show');
+    Route::post('products/search', [\App\Http\Controllers\API\V1\Customer\ProductController::class, 'search'])->name('products.search');
+    Route::get('top-selling-product', [\App\Http\Controllers\API\V1\Client\TopSellingProduct\TopSellingProduct::class, 'customer_index']);
     //Orders
     Route::post('/order/store', [\App\Http\Controllers\API\V1\Customer\OrderController::class, 'store'])->name('order.store');
     Route::get('/order/{id}/details', [\App\Http\Controllers\API\V1\Customer\OrderController::class, 'show'])->name('order.details');
 
-    //top-selling product
-    Route::get('top-selling-product', [TopSellingProduct::class, 'customer_index']);
 
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+    //Customer Auth
+    Route::post('/register', [\App\Http\Controllers\API\V1\Customer\AuthController::class, 'register']);
+    Route::post('/login', [\App\Http\Controllers\API\V1\Customer\AuthController::class, 'login']);
 });
 
 
 //merchant api
 
 Route::group(['prefix' => 'v1'], function () {
-    Route::post('signup', [LoginController::class, 'register']);
-    Route::post('auth/verify', [LoginController::class, 'verify']);
-    Route::post('resend/otp', [LoginController::class, 'resendOTP']);
-    
-    Route::get('device/{ip}/check/{browser}', [LoginController::class, 'checkIp']);
+    Route::post('/login', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'merchant_login'])->name('merchant.login');
+    Route::post('/signup', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'register']);
+    Route::post('/auth/verify', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'verify']);
+    Route::post('/resend/otp', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'resendOTP']);
+    Route::post('/shops/info', [\App\Http\Controllers\API\V1\Client\Shop\ShopController::class, 'index']);
+    Route::get('/page/{page}', [\App\Http\Controllers\API\V1\PageController::class, 'show']);
+    Route::get('/device/{ip}/check/{browser}', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'checkIp']);
 });
 
 
-Route::post('login', [LoginController::class, 'merchant_login'])->name('merchant.login');
+
 
 Route::group(['prefix' => 'v1/client'], function () {
     Route::post('forget-password', [ForgetPasswordController::class, 'forgetPassword']);
     Route::post('/otp-verify', [ForgetPasswordController::class, 'verifyOtp']);
+    Route::get('/themes/list/{page}', [ThemeController::class, 'getListByPage']);
+    Route::post('/update-password', [ForgetPasswordController::class, 'updatePassword']);
 });
 
-Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(function () {
+Route::prefix('v1/client')->middleware('auth-merchant')->name('client.')->group(function () {
     Route::get('logout', [LoginController::class, 'merchant_logout'])->name('logout');
     Route::prefix('settings')->name('settings.')->group(function () {
 
@@ -86,6 +86,9 @@ Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(funct
         Route::post('business-info/update', [MerchantSetting::class, 'business_info_update'])->name('business.info.update');
         Route::post('pixel/update', [MerchantSetting::class, 'pixel_update'])->name('pixel.update');
         Route::post('domain-meta/update', [MerchantSetting::class, 'domain_verify'])->name('domain.meta.update');
+        Route::post('domain/update', [MerchantSetting::class, 'domain_request'])->name('domain.request.update');
+        Route::post('/advance-payment/status/update', [MerchantSetting::class, 'updateAdvancePaymentStatus']);
+        Route::get('/advance-payment/status', [MerchantSetting::class, 'getAdvancePaymentStatus']);
 
         //owner info
         Route::get('owner-info', [MerchantSetting::class, 'owner_info'])->name('owner.info');
@@ -98,6 +101,10 @@ Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(funct
         Route::get('website', [MerchantSetting::class, 'website'])->name('website');
         Route::post('website/update', [MerchantSetting::class, 'website_update'])->name('website.update');
     });
+
+    // SMS Send
+        Route::post('/single-sms-send', [SmsController::class, 'single_sms_send']);
+        Route::post('/multiple-sms-send', [SmsController::class, 'multiple_sms_send']);
 
     // Support ticket
     Route::group(['prefix' => 'support-ticket'], function () {
@@ -116,6 +123,8 @@ Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(funct
 
     Route::get('sales-target', [SalesTargetController::class, 'sales_target'])->name('sales.target');
     Route::post('sales-target/update', [SalesTargetController::class, 'sales_target_update'])->name('sales.target.update');
+
+
     Route::post('orders/status/update', [ClientOrder::class, 'order_status_update'])->name('orders.status.update');
     Route::get('/order-invoice', [ClientOrder::class, 'order_invoice'])->name('order.invoice');
     Route::post('/order/follow-up/{id}/update', [ClientOrder::class, 'updateFollowup'])->name('order.follow_up');
@@ -147,15 +156,12 @@ Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(funct
         Route::post('/import-theme', [ThemeController::class, 'import']);
         Route::post('/merchant/themes', [ThemeController::class, 'getMerchantsTheme']);
 
-        Route::get('/list/{page}', [ThemeController::class, 'getListByPage']);
         Route::post('/custom/store', [ThemeController::class, 'store']);
         Route::post('/custom/{id}/update', [ThemeController::class, 'update']);
-
     });
 
 
     Route::group(['prefix' => 'courier'], function () {
-
         Route::get('/list', [CourierController::class, 'index']);
         Route::post('/provider', [CourierController::class, 'store']);
         Route::post('/send-order', [CourierController::class, 'sendOrderToCourier']);
@@ -164,19 +170,3 @@ Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(funct
 
 
 });
-Route::group(['prefix' => 'v1/shops'], function () {
-    Route::post('/info', [ShopController::class, 'index']);
-});
-
-
-
-
-
-
-
-
-
-
-
-
-

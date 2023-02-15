@@ -114,7 +114,6 @@ class PageController extends Controller
         if (!$page) {
             return $this->sendApiResponse('', 'Page not found', 'NotFound');
         }
-
         $theme = ActiveTheme::query()->where('theme_id', $page->theme)->where('shop_id', request()->header('shop-id'))->first();
         $theme->delete();
         $page->delete();

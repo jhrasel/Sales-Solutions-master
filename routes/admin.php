@@ -45,6 +45,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'panel'], function () {
         Route::get('/{uuid}', [SupportTicketController::class, 'show']);
         Route::get('/details/{uuid}', [SupportTicketController::class, 'getTicketDetails']);
         Route::post('/store', [SupportTicketController::class, 'store']);
+        Route::post('/reply/{id}', [SupportTicketController::class, 'replyToTicket']);
     });
 
     Route::group(['prefix' => 'themes'], function () {
@@ -53,5 +54,5 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'panel'], function () {
         Route::post('/store', [ThemeController::class, 'store']);
     });
 
-
+    Route::get('download/{id}/attachment/',[SupportTicketController::class, 'download']);
 });

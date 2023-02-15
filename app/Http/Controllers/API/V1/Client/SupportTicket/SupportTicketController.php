@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\HigherOrderBuilderProxy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+
 class SupportTicketController extends Controller
 {
     use sendApiResponse;
