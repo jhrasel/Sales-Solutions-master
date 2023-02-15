@@ -22,11 +22,7 @@ class SettingController extends MerchantBaseController
     use sendApiResponse;
     public function business_info(MerchantSettingRequest $request): JsonResponse
     {
-        $merchant = User::query()->where('role', 'merchant')->find(auth()->id());
-        if (!$merchant) {
-            return response()->json(['success' => false, 'msg' => 'Merchant not Found',], 200);
-        }
-        $shop = Shop::with('shop_logo')->where('user_id', $merchant->id)->first();
+        $shop = Shop::with('shop_logo')->where('shop_id', $request->header('shop-id'))->first();
         if (!$shop) {
             return response()->json(['success' => false, 'msg' => 'Shop not Found',], 200);
         }

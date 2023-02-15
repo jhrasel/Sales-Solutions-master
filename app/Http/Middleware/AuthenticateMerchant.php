@@ -39,7 +39,7 @@ class AuthenticateMerchant
     {
         $id = $request->header('id');
         $token = Str::replace('Bearer ', '', $request->header('authorization'));
-        $isMerchant = $this->isAuthenticated($id, $token, $request->header('ipaddress'), $request->header('browsername'));
+        $isMerchant = $this->isAuthenticated($id, $token);
         return $isMerchant ? true : false;
     }
 }
