@@ -17,12 +17,9 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Routing\Route;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -136,7 +133,7 @@ class LoginController extends MerchantBaseController
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 401);
+            return response()->json(['error' => $validator->errors()], 422);
         }
 
         $user = User::query()->with('shop')
@@ -160,7 +157,7 @@ class LoginController extends MerchantBaseController
     {
         $token = Str::random(80);
         $newToken = new MerchantToken();
-        $newToken->user_id = $merchant->id;
+        $newToken->user_id = $merchant;
         $newToken->token = $token;
         $newToken->ip = $ip;
         $newToken->browser = $browser;
@@ -168,10 +165,20 @@ class LoginController extends MerchantBaseController
         return $token;
     }
 
-    public function merchant_logout(): JsonResponse
+    public function merchant_logout(Request $request)
     {
-        $userRemoveToken = auth()->user()->removeApiToken();
-        return response()->json(['msg' => $userRemoveToken], 200);
+        try {
+            $token = Str::replace('Bearer ', '', $request->header('authorization'));
+            $merchant = MerchantToken::query()->where('user_id', $request->header('id'))
+                ->where('token', $token)
+                ->where('ip', $request->header('ipaddress'))
+                ->where('browser', $request->header('browsername'))
+                ->delete();
+            return $this->sendApiResponse('', 'Successfully Logout!');
+
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
 
     }
 
@@ -214,14 +221,14 @@ class LoginController extends MerchantBaseController
         $sms->sendVerifyOtp($user);
         return $this->sendApiResponse('', 'OTP has been send to given number');
     }
-    
+
     public function checkIp($ip, $browser): JsonResponse
     {
-        $user = MerchantToken::query()->where('ip', $ip)->where('browser', $browser)->first(); 
+        $user = MerchantToken::query()->where('ip', $ip)->where('browser', $browser)->first();
         if(!$user) {
             return $this->sendApiResponse('', 'No user token found with this ip');
         }
-        
+
         return $this->sendApiResponse($user);
     }
 }

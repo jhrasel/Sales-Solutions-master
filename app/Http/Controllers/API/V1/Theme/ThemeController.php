@@ -36,7 +36,7 @@ class ThemeController extends Controller
 
     public function getListByPage(Request $request, $page): JsonResponse
     {
-        $query = ThemeEdit::query()->with('gallery')->where('shop_id', $request->header('shop_id'))->where('page', $page)->get();
+        $query = ThemeEdit::query()->with('gallery')->where('shop_id', $request->header('shop-id'))->where('page', $page)->get();
 
         if ($query->isEmpty()) {
             return $this->sendApiResponse('', 'No data available');
@@ -58,7 +58,7 @@ class ThemeController extends Controller
             'theme' => 'nullable',
             'menu' => 'nullable',
         ]);
-        $data['shop_id'] = $request->header('shop_id');
+        $data['shop_id'] = $request->header('shop-id');
         if ($request->hasFile('logo')) {
             $file = $request->file('logo')->getClientOriginalName();
             $path = '/themes/images';
@@ -130,18 +130,18 @@ class ThemeController extends Controller
         }
 
         if ($theme->type === 'multiple') {
-            $import = ActiveTheme::query()->where('shop_id', $request->header('shop_id'))->where('type', 'multiple')->first();
+            $import = ActiveTheme::query()->where('shop_id', $request->header('shop-id'))->where('type', 'multiple')->first();
             if (!$import) {
                 $import = new ActiveTheme();
             }
-            $import->shop_id = $request->header('shop_id');
+            $import->shop_id = $request->header('shop-id');
             $import->theme_id = $theme->id;
             $import->type = 'multiple';
             $import->save();
             $import->load(['theme', 'theme.media']);
         } else {
             $import = ActiveTheme::query()->updateOrCreate([
-                'shop_id' => $request->header('shop_id'),
+                'shop_id' => $request->header('shop-id'),
                 'theme_id' => $theme->id,
                 'type' => $request->input('type')
             ]);
@@ -158,7 +158,7 @@ class ThemeController extends Controller
             'type' => ['required']
         ]);
 
-        $shop = Shop::query()->where('shop_id', $request->header('shop_id'))->first();
+        $shop = Shop::query()->where('shop_id', $request->header('shop-id'))->first();
 
         if (!$shop) {
             throw ValidationException::withMessages([

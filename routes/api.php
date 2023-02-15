@@ -58,6 +58,7 @@ Route::prefix('v1/customer')->name('customer.')->group(function () {
 //merchant api
 
 Route::group(['prefix' => 'v1'], function () {
+    Route::post('/login', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'merchant_login'])->name('merchant.login');
     Route::post('/signup', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'register']);
     Route::post('/auth/verify', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'verify']);
     Route::post('/resend/otp', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'resendOTP']);
@@ -67,7 +68,7 @@ Route::group(['prefix' => 'v1'], function () {
 });
 
 
-Route::post('/login', [LoginController::class, 'merchant_login'])->name('merchant.login');
+
 
 Route::group(['prefix' => 'v1/client'], function () {
     Route::post('forget-password', [ForgetPasswordController::class, 'forgetPassword']);
@@ -76,7 +77,7 @@ Route::group(['prefix' => 'v1/client'], function () {
     Route::post('/update-password', [ForgetPasswordController::class, 'updatePassword']);
 });
 
-Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(function () {
+Route::prefix('v1/client')->middleware('auth-merchant')->name('client.')->group(function () {
     Route::get('logout', [LoginController::class, 'merchant_logout'])->name('logout');
     Route::prefix('settings')->name('settings.')->group(function () {
 
@@ -104,7 +105,7 @@ Route::prefix('v1/client')->middleware('auth:api')->name('client.')->group(funct
     // SMS Send
         Route::post('/single-sms-send', [SmsController::class, 'single_sms_send']);
         Route::post('/multiple-sms-send', [SmsController::class, 'multiple_sms_send']);
-    
+
     // Support ticket
     Route::group(['prefix' => 'support-ticket'], function () {
         Route::post('/list', [SupportTicketController::class, 'index']);

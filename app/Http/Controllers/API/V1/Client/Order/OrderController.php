@@ -7,11 +7,10 @@ use App\Http\Requests\OrderRequest;
 use App\Models\Product;
 use App\Services\Sms;
 use App\Models\Order;
-use App\Models\OrderDetails;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Shop;
 
@@ -53,7 +52,7 @@ class OrderController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function create()
     {
@@ -61,7 +60,7 @@ class OrderController extends Controller
     }
 
 
-    public function store(OrderRequest $request)
+    public function store(OrderRequest $request): JsonResponse
     {
         $customer = User::query()->firstOrCreate([
             'phone' => $request->input('customer_phone'),
@@ -76,7 +75,7 @@ class OrderController extends Controller
         $order = Order::query()->create([
             'order_no' => rand(100, 9999),
             'shop_id' => $request->header('shop-id'),
-            'user_id' => auth()->user()->id,
+            'user_id' => $request->header('id'),
             'customer_id' => $customer->id,
             'address' => $request->input('customer_address')
         ]);
@@ -105,40 +104,21 @@ class OrderController extends Controller
             ]);
         }
 
-        $shop = Shop::where('shop_id', auth()->user()->shop->shop_id)->first();
+        $shop = Shop::query()->where('shop_id', $request->header('shop-id'))->first();
 
-        if ($shop->sms_balance < 1) {
-
-        } else {
+        if (!$shop->sms_balance < 1) {
             $shop->sms_balance = $shop->sms_balance - 1;
             $shop->sms_sent = $shop->sms_sent + 1;
             $shop->save();
 
-
-            $user = '20102107';
-            $password = 'SES@321';
-            $sender_id = 'INFOSMS';
-            $msg = 'Dear ' . $request->input('customer_name') . ' , Your Order No. ' . $order->order_no . ' is pending.Thank you.' . auth()->user()->shop->name . '';
-            $url2 = "https://mshastra.com/sendurl.aspx";
-            $data2 = [
-                "user" => $user,
-                "pwd" => $password,
-                "type" => "text",
-                "CountryCode" => "+880",
-                "mobileno" => $request->input('customer_phone'),
-                "senderid" => $sender_id,
-                "msgtext" => $msg,
-            ];
-            $ch = curl_init($url2);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data2);
-            $order = curl_exec($ch);
+            $sms = new Sms();
+            $sms->sendSms($request->input('customer_phone'), $order->order_no, $shop->name);
         }
 
         return $this->sendApiResponse($order, 'Order Created Successfully');
 
     }
-    
+
     /**
      * Display the specified resource.
      *
@@ -147,17 +127,12 @@ class OrderController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $merchant = User::query()->where('role', 'merchant')->find(auth()->user()->id);
-        if (!$merchant) {
-            return $this->sendApiResponse('', 'Merchant not found');
-        }
-
-        $order = Order::with(['order_details'])->where('id', $id)->where('shop_id', $merchant->shop->shop_id)->first();
+        $order = Order::with(['order_details'])->where('id', $id)->where('shop_id', request()->header('shop-id'))->first();
         if (!$order) {
             return $this->sendApiResponse('', 'Order not found');
         }
 
-        $customer = User::where('id', $order->customer_id)->where('role', 'customer')->first();
+        $customer = User::query()->where('id', $order->customer_id)->where('role', 'customer')->first();
         if (!$customer) {
             return $this->sendApiResponse('', 'Customer not found');
         }
@@ -171,7 +146,7 @@ class OrderController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function edit($id)
     {
@@ -181,9 +156,9 @@ class OrderController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function update(Request $request, $id)
     {
@@ -194,7 +169,7 @@ class OrderController extends Controller
      * Remove the specified resource from storage.
      *
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function destroy($id)
     {
@@ -202,80 +177,41 @@ class OrderController extends Controller
     }
 
 
-    public function order_status_update(OrderRequest $request)
+    public function order_status_update(OrderRequest $request): JsonResponse
     {
-        try {
+        $order = Order::query()->with('order_details')
+            ->where('id', $request->input('order_id'))
+            ->where('shop_id', $request->header('shop-id'))
+            ->first();
+        if (!$order) {
+            return $this->sendApiResponse('', 'Order Not Found', 'NotFound');
+        }
 
-            $merchant = User::where('role', 'merchant')->find(auth()->user()->id);
-            if (!$merchant) {
-                return response()->json([
-                    'success' => false,
-                    'msg' => 'Merchant not Found',
-                ], 404);
+        $order->order_status = $request->input('status');
+        if ($request->input('status') == 'returned') {
+            $order->return_order_date = $request->input('return_order_date');
+            $order->return_order_note = $request->input('return_order_note');
+            foreach ($order->order_details as $details) {
+                $details->product->update([
+                    'product_qty' => $details->product->product_qty + $details->product_qty
+                ]);
             }
+        }
+        $order->save();
 
-            $order = Order::with('order_details')->where('id', $request->order_id)->where('shop_id', $merchant->shop->shop_id)->first();
-            if (!$order) {
-                return response()->json([
-                    'success' => false,
-                    'msg' => 'Order not Found!',
-                ], 404);
-            }
+        $shop = Shop::query()->where('shop_id', $request->header('shop-id'))->first();
 
-            $order->order_status = $request->status;
-            if ($request->status == 'returned') {
-                $order->return_order_date = $request->return_order_date;
-                $order->return_order_note = $request->return_order_note;
-                foreach ($order->order_details as $details) {
-                    $details->product->update([
-                        'product_qty' => $details->product->product_qty + $details->product_qty
-                    ]);
-                }
-            }
-            $order->save();
-
-            $shop = Shop::where('shop_id', $merchant->shop->shop_id)->first();
-
-            if ($shop->sms_balance < 1) {
-
-            } else {
+        if (!$shop->sms_balance < 1) {
             $shop->sms_balance = $shop->sms_balance - 1;
             $shop->sms_sent = $shop->sms_sent + 1;
             $shop->save();
 
-            $user = '20102107';
-            $password = 'SES@321';
-            $sender_id = 'INFOSMS';
-            $msg = 'Dear ' . $order->customer_name . ' ,
-Your Order No. ' . $order->order_no . ' is ' . $order->order_status . '.
-Thank you.
-
-' . $merchant->shop->name . '';
-            $url2 = "https://mshastra.com/sendurl.aspx";
-            $data2 = [
-                "user" => $user,
-                "pwd" => $password,
-                "type" => "text",
-                "CountryCode" => "+880",
-                "mobileno" => $order->customer->phone,
-                "senderid" => $sender_id,
-                "msgtext" => $msg,
-            ];
-            $ch = curl_init($url2);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data2);
-            $order = curl_exec($ch);
-            }
-            return response()->json([
-                'success' => true,
-                'msg' => 'Order Status Update Successfully',
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'msg' => $e->getMessage(),
-            ], 400);
+            $sms = new Sms();
+            $message = 'Dear ' . $order->customer_name . ' , Your Order No. ' . $order->order_no . ' is ' . $order->order_status . '.Thank you.' . $shop->name . '';
+            $sms->sendSms($request->input('customer_phone'), $order->order_no, $shop->name, $message);
         }
+        return $this->sendApiResponse($order, 'Order Status Update Successfully');
+
     }
 
     public function order_invoice(Request $request): JsonResponse

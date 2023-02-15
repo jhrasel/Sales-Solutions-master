@@ -37,7 +37,7 @@ class UserFactory extends Factory
         return $this->state(function (array $attributes) {
             return [
                 'name' => $this->faker->name,
-                'email' => $this->faker->unique()->email(),
+                'email' => 'merchant'.rand(1, 99999).'@gmail.com',
                 'phone' => $this->faker->unique()->phoneNumber(),
                 'role' => 'merchant',
             ];
@@ -49,7 +49,7 @@ class UserFactory extends Factory
         return $this->state(function (array $attributes) {
             return [
                 'name' => $this->faker->name,
-                'email' => $this->faker->unique()->email(),
+                'email' => 'customer'.rand(1, 99999).'@gmail.com',
                 'phone' => $this->faker->unique()->phoneNumber(),
                 'role' => 'customer',
             ];
@@ -65,7 +65,7 @@ class UserFactory extends Factory
         return $this->state(function (array $attributes) {
             return [
                 'name' => $this->faker->name,
-                'email' => $this->faker->unique()->email(),
+                'email' => 'staff'.rand(1, 99999).'@gmail.com',
                 'phone' => $this->faker->unique()->phoneNumber(),
                 'role' => 'staff',
             ];

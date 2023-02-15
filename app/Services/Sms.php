@@ -30,6 +30,19 @@ class Sms
         return 'user=FunnelLine&pwd=upm664se&CountryCode=+880&mobileno='.$phone.'&senderid=FunnelLiner&msgtext='.$message;
     }
 
+    public function smsConfig($phone, $order, $shop, $message = null): string
+    {
+        if(Str::startsWith($phone, '+88')) {
+            $phone = User::removeCode($phone);
+        }
+
+        if($message === null) {
+            $message = 'Dear ' . $phone . ' , Your Order No. ' . $order . ' is pending.Thank you.' . $shop . '';
+        }
+
+        return 'user=20102107&pwd=SES@321&CountryCode=+880&mobileno='.$phone.'&senderid=INFOSMS&msgtext='.$message;
+    }
+
     public function sendOtp($user)
     {
         $otp = mt_rand(111111, 999999);
@@ -58,4 +71,12 @@ class Sms
         $query = $this->config($otp, $user->phone, null);
         return $this->request()->get('sendurl.aspx', $query);
     }
+
+    public function sendSms($user, $order, $shop, $message = null)
+    {
+        $query = $this->smsConfig($user, $order, $shop, $message);
+        return $this->request()->get('sendurl.aspx', $query);
+    }
+
+
 }
