@@ -81,6 +81,7 @@ class OrderController extends Controller
         ]);
 
         $grand_total = 0;
+        $shipping_cost = 0;
         //store order details
         foreach ($request->input('product_id') as $key => $item) {
 
@@ -89,11 +90,17 @@ class OrderController extends Controller
             $order->order_details()->create([
                 'product_id' => $item,
                 'product_qty' => $request->input('product_qty')[$key],
+                'unit_price' => $product->price,
             ]);
 
             $grand_total += $product->price * $request->input('product_qty')[$key];
 
+            if($product->delivery_charge === Product::PAID) {
+                $shipping_cost += $product[$request->input('delivery_location')];
+            }
+
         }
+        $order->shipping_cost = $shipping_cost;
         $order->grand_total = $grand_total;
         $order->save();
 

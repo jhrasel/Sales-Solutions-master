@@ -12,6 +12,9 @@ class Product extends Model
     use HasFactory;
     protected $guarded = [];
 
+    const FREE = 'free';
+    const PAID = 'paid';
+
     public function main_image(): BelongsTo
     {
         return $this->belongsTo(Media::class,'id','parent_id')->where('type','product_main_image');
