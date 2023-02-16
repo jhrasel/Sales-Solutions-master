@@ -8,13 +8,11 @@ use App\Models\User;
 
 trait merchantCheck
 {
-    public function isAuthenticated($id, $token, $ip, $browser)
+    public function isAuthenticated($id, $token)
     {
         try {
             if (MerchantToken::query()->where('user_id', $id)
                 ->where('token', $token)
-                ->where('ip', $ip)
-                ->where('browser', $browser)
                 ->count()) {
                 return $this->getMerchant($id);
             }

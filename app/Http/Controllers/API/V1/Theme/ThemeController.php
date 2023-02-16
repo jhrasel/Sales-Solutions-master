@@ -1,6 +1,4 @@
-<?php /** @noinspection PhpUnhandledExceptionInspection */
-
-/** @noinspection PhpUndefinedFieldInspection */
+<?php
 
 namespace App\Http\Controllers\API\V1\Theme;
 
@@ -166,6 +164,7 @@ class ThemeController extends Controller
             ]);
         }
         $active_themes = ActiveTheme::query()->where('shop_id', $shop->shop_id)->pluck('theme_id');
+
         $theme = Theme::query()->with('media')->where('type', $request->input('type'))->whereIn('id', $active_themes)->get();
 
         if ($theme->isEmpty()) {

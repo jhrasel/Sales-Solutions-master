@@ -17,7 +17,7 @@ class SalesTargetController extends Controller
 
     public function sales_target(): JsonResponse
     {
-        $salesTarget = SalesTarget::query()->where('user_id', auth()->user()->id)->first();
+        $salesTarget = SalesTarget::query()->where('shop_id', request()->header('shop-id'))->first();
         if (!$salesTarget) {
             return $this->sendApiResponse('', 'Sales target not available right now', 'NotAvailable');
         }
@@ -29,7 +29,7 @@ class SalesTargetController extends Controller
     public function sales_target_update(SalesTargetRequest $request): JsonResponse
     {
         $salesTarget = SalesTarget::query()->updateOrCreate([
-            'user_id' => auth()->id(),
+            'user_id' => $request->header('id'),
             'shop_id' => $request->header('shop-id')
         ], [
             'daily' => $request->input('daily'),
