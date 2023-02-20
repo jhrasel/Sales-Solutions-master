@@ -441,7 +441,7 @@ class SettingController extends MerchantBaseController
 
     public function website(): JsonResponse
     {
-        $merchant = User::query()->where('role', 'merchant')->find($request->header('id'));
+        $merchant = User::query()->where('role', 'merchant')->find(request()->header('id'));
         if (!$merchant) {
             return response()->json([
                 'success' => false,
