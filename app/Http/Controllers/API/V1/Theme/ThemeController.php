@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActiveTheme;
 use App\Models\Shop;
 use App\Models\Theme;
+use App\Models\Page;
 use App\Models\ThemeEdit;
 use App\Models\ThemeImage;
 use App\Traits\sendApiResponse;
@@ -87,6 +88,7 @@ class ThemeController extends Controller
 
     public function update(Request $request, $id): JsonResponse
     {
+
         $data = ThemeEdit::query()->findOrFail($id);
         if ($request->hasFile('logo')) {
             $file = $request->file('logo')->getClientOriginalName();
@@ -97,7 +99,7 @@ class ThemeController extends Controller
         }
 
         if ($request->input('gallery') !== null) {
-            foreach ($request->input('gallery') as $item) {
+            foreach (json_decode($request->input('gallery')) as $item) {
                 $file = time().'-'.$item['file_name']->getClientOriginalName();
                 $path = '/themes/images/gallery';
                 $image = $item->storeAs($path, $file, 'local');
@@ -122,6 +124,7 @@ class ThemeController extends Controller
             'theme_id' => ['required'],
         ]);
         $theme = Theme::query()->where('id', $request->input('theme_id'))->first();
+        
 
         if (!$theme) {
             return $this->sendApiResponse('', 'Theme not available right now', 'themeNotFound', [], 401);
@@ -164,8 +167,10 @@ class ThemeController extends Controller
             ]);
         }
         $active_themes = ActiveTheme::query()->where('shop_id', $shop->shop_id)->pluck('theme_id');
+	
 
-        $theme = Theme::query()->with('media')->where('type', $request->input('type'))->whereIn('id', $active_themes)->get();
+        $theme = Theme::query()->with('media')->with('page')->where('type', $request->input('type'))->whereIn('id', $active_themes)->get();
+        
 
         if ($theme->isEmpty()) {
             return $this->sendApiResponse('', 'No theme has been imported', 'themeNotFound', []);
