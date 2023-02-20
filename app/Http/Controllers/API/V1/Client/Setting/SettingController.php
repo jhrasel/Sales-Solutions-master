@@ -32,7 +32,7 @@ class SettingController extends MerchantBaseController
 
     public function business_info_update(MerchantSettingRequest $request): JsonResponse
     {
-            $merchant = User::query()->where('role', 'merchant')->find(auth()->id());
+            $merchant = User::query()->where('role', 'merchant')->find($request->header('id'));
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
@@ -75,7 +75,7 @@ class SettingController extends MerchantBaseController
 
         try {
             DB::beginTransaction();
-            $merchant = User::where('role', 'merchant')->find(auth()->user()->id);
+            $merchant = User::where('role', 'merchant')->find($request->header('id'));
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
@@ -121,7 +121,7 @@ class SettingController extends MerchantBaseController
     {
         try {
             DB::beginTransaction();
-            $merchant = User::where('role', 'merchant')->find(auth()->user()->id);
+            $merchant = User::where('role', 'merchant')->find($request->header('id'));
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
@@ -164,7 +164,7 @@ class SettingController extends MerchantBaseController
     {
         try {
             DB::beginTransaction();
-            $merchant = User::where('role', 'merchant')->find(auth()->user()->id);
+            $merchant = User::where('role', 'merchant')->find($request->header('id'));
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
@@ -204,7 +204,7 @@ class SettingController extends MerchantBaseController
     {
         try {
 
-            $merchant = User::query()->where('role', 'merchant')->find(auth()->user()->id);
+            $merchant = User::query()->where('role', 'merchant')->find($request->header('id'));
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
@@ -237,7 +237,7 @@ class SettingController extends MerchantBaseController
                 }
 
                 $web->shop_id = $request->header('shop-id');
-                $web->user_id = auth()->user()->id;
+                $web->user_id = $request->header('id');
                 if ($request->meta_title) {
                     $web->meta_title = $request->meta_title;
                 }
@@ -291,7 +291,7 @@ class SettingController extends MerchantBaseController
 
 
             $websiteSetting->shop_id = $request->header('shop-id');
-            $websiteSetting->user_id = auth()->user()->id;
+            $websiteSetting->user_id = $request->header('id');
             if ($request->meta_title) {
                 $websiteSetting->meta_title = $request->meta_title;
             }
@@ -340,7 +340,7 @@ class SettingController extends MerchantBaseController
 
         try {
             DB::beginTransaction();
-            $merchant = User::where('role', 'merchant')->find(auth()->user()->id);
+            $merchant = User::where('role', 'merchant')->find($request->header('id'));
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
@@ -376,7 +376,7 @@ class SettingController extends MerchantBaseController
 
         try {
             DB::beginTransaction();
-            $merchant = User::where('role', 'merchant')->find(auth()->user()->id);
+            $merchant = User::where('role', 'merchant')->find($request->header('id'));
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
@@ -410,7 +410,7 @@ class SettingController extends MerchantBaseController
 
         try {
             DB::beginTransaction();
-            $merchant = User::where('role', 'merchant')->find(auth()->user()->id);
+            $merchant = User::where('role', 'merchant')->find($request->header('id'));
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
@@ -441,7 +441,7 @@ class SettingController extends MerchantBaseController
 
     public function website(): JsonResponse
     {
-        $merchant = User::query()->where('role', 'merchant')->find(auth()->id());
+        $merchant = User::query()->where('role', 'merchant')->find($request->header('id'));
         if (!$merchant) {
             return response()->json([
                 'success' => false,
