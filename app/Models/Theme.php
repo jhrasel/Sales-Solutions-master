@@ -15,5 +15,9 @@ class Theme extends Model
     {
         return $this->belongsTo(Media::class,'id','parent_id')->where('type', 'template');
     }
+    public function page(): BelongsTo
+    {
+        return $this->belongsTo(Page::class,'id', 'theme');
+    }
 
 }
