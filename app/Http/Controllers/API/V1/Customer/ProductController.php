@@ -19,13 +19,7 @@ class ProductController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $products = Product::with('main_image')->where('shop_id', $request->header('shop-id'))->get();
-        foreach ($products as $product) {
-            $other_images = Media::query()->where('parent_id', $product->id)->where('type', 'product_other_image')->get();
-            $product['other_images'] = $other_images;
-            $allProduct[] = $product;
-        }
-
+        $products = Product::query()->with('main_image', 'other_images')->where('shop_id', $request->header('shop-id'))->get();
         if ($products->isEmpty()) {
             return $this->sendApiResponse('', 'No Product Available', 'NotAvailable');
         }
@@ -44,7 +38,7 @@ class ProductController extends Controller
      */
     public function show(Request $request, int $id): JsonResponse
     {
-        $product = Product::with('main_image')
+        $product = Product::with('main_image', 'other_images')
             ->where('shop_id', $request->header('shop-id'))
             ->where('id', $id)
             ->first();
@@ -52,13 +46,6 @@ class ProductController extends Controller
         if (!$product) {
             return $this->sendApiResponse('', 'Product Not Found', 'NotFound');
         }
-
-        $other_images = Media::query()
-            ->where('parent_id', $product->id)
-            ->where('type', 'product_other_image')
-            ->get();
-
-        $product['other_images'] = $other_images;
         return $this->sendApiResponse($product);
 
     }

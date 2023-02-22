@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\MerchantController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\SupportTicketController;
 use App\Http\Controllers\Admin\ThemeController;
+use App\Jobs\UpdateOrderCourierStatus;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
@@ -55,4 +56,8 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'panel'], function () {
     });
 
     Route::get('download/{id}/attachment/',[SupportTicketController::class, 'download']);
+
+    Route::get('check-jobs', function () {
+        UpdateOrderCourierStatus::dispatch();
+    });
 });
