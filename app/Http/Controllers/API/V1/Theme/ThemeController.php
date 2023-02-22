@@ -69,15 +69,25 @@ class ThemeController extends Controller
 
         $theme = ThemeEdit::query()->create($data);
         if ($request->input('gallery') !== null) {
-            foreach ($request->input('gallery') as $item) {
-                $file = time().'-'.$item['file_name']->getClientOriginalName();
+
+            foreach (json_decode($request->input('gallery')) as $item) {
+
+                $img = preg_replace('/^data:image\/\w+;base64,/', '', $item->file_name);
+                $fileformat = explode(';', $item->file_name)[0];
+                $type = explode('/', $fileformat)[1];
+
+                $im = base64_decode($img);
+                $file = time().'-gallery'.'.'.$type;
                 $path = '/themes/images/gallery';
-                $image = $item->storeAs($path, $file, 'local');
+
+                $i = \Storage::disk('local')->put($path . '/' . $file, $im);
+
                 $gallery = ThemeImage::query()->create([
                     'theme_edit_id' => $theme->id,
-                    'type' => $item['type'],
-                    'file_name' => $image
+                    'type' => $item->type,
+                    'file_name' => $file
                 ]);
+
             }
         }
         $theme->load('gallery');
@@ -99,15 +109,25 @@ class ThemeController extends Controller
         }
 
         if ($request->input('gallery') !== null) {
+
             foreach (json_decode($request->input('gallery')) as $item) {
-                $file = time().'-'.$item['file_name']->getClientOriginalName();
+
+                $img = preg_replace('/^data:image\/\w+;base64,/', '', $item->file_name);
+                $fileformat = explode(';', $item->file_name)[0];
+                $type = explode('/', $fileformat)[1];
+
+                $im = base64_decode($img);
+                $file = time().'-gallery'.'.'.$type;
                 $path = '/themes/images/gallery';
-                $image = $item->storeAs($path, $file, 'local');
+
+                $i = \Storage::disk('local')->put($path . '/' . $file, $im);
+
                 $gallery = ThemeImage::query()->create([
                     'theme_edit_id' => $id,
-                    'type' => $item['type'],
-                    'file_name' => $image
+                    'type' => $item->type,
+                    'file_name' => $file
                 ]);
+
             }
         }
 
@@ -124,7 +144,7 @@ class ThemeController extends Controller
             'theme_id' => ['required'],
         ]);
         $theme = Theme::query()->where('id', $request->input('theme_id'))->first();
-        
+
 
         if (!$theme) {
             return $this->sendApiResponse('', 'Theme not available right now', 'themeNotFound', [], 401);
@@ -167,10 +187,10 @@ class ThemeController extends Controller
             ]);
         }
         $active_themes = ActiveTheme::query()->where('shop_id', $shop->shop_id)->pluck('theme_id');
-	
+
 
         $theme = Theme::query()->with('media')->with('page')->where('type', $request->input('type'))->whereIn('id', $active_themes)->get();
-        
+
 
         if ($theme->isEmpty()) {
             return $this->sendApiResponse('', 'No theme has been imported', 'themeNotFound', []);

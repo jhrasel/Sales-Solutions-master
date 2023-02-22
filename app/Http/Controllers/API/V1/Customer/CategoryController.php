@@ -11,81 +11,65 @@ use Illuminate\Http\Request;
 class CategoryController extends Controller
 {
     use sendApiResponse;
+
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return JsonResponse
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-
-        try {
-
-            $shopId = $request->header('shop_id');
-            $category = Category::with('category_image')->where('shop_id', $shopId)->get();
-            if (!$category) {
-                return response()->json([
-                    'success' => false,
-                    'msg' =>  'Category not Found',
-                ], 404);
-            }
-
-            $categories = $this->getCategoryTreeForParentId(0,$shopId);
-
-
-            return response()->json([
-                'success' => true,
-                'data' =>   $categories,
-            ], 200);
-        } catch (\Exception $e) {
+        $category = Category::query()->with('category_image')->where('shop_id', $request->header('shop-id'))->get();
+        if (!$category) {
             return response()->json([
                 'success' => false,
-                'msg' =>   $e->getMessage(),
-            ], 400);
+                'msg' => 'Category not Found',
+            ], 200);
         }
+
+        $categories = $this->getCategoryTreeForParentId(0, $request->header('shop-id'));
+        return response()->json([
+            'success' => true,
+            'data' => $categories,
+        ], 200);
+
     }
 
 
     /**
      * Display the specified resource.
      *
+     * @param Request $request
      * @param $slug
      * @return JsonResponse
      */
-    public function show(Request $request, $slug)
+    public function show(Request $request, $slug): JsonResponse
     {
-        try {
-
-            $shopId = $request->header('shop_id');
-            $category = Category::with('category_image')->where('slug', $slug)->where('shop_id', $shopId)->first();
-            if (!$category) {
-                return response()->json([
-                    'success' => false,
-                    'msg' =>  'Category not Found',
-                ], 404);
-            }
-
-            $categories = $this->getCategoryTreeForParentId($category->id,$shopId);
-
-
-            return response()->json([
-                'success' => true,
-                'data' =>   $categories,
-            ], 200);
-        } catch (\Exception $e) {
+        $category = Category::query()->with('category_image')
+            ->where('slug', $slug)
+            ->where('shop_id', $request->header('shop-id'))
+            ->first();
+        if (!$category) {
             return response()->json([
                 'success' => false,
-                'msg' =>   $e->getMessage(),
-            ], 400);
+                'msg' => 'Category not Found',
+            ], 404);
         }
-        //return $this->sendApiResponse($category);
+
+        $categories = $this->getCategoryTreeForParentId($category->id, $request->header('shop-id'));
+
+        return response()->json([
+            'success' => true,
+            'data' => $categories,
+        ], 200);
+
     }
 
-    public function getCategoryTreeForParentId($parent_id=0,$shopID)
+    public function getCategoryTreeForParentId($shopID, $parent_id = 0): array
     {
         $categories = array();
-
-        $result = Category::where('parent_id', $parent_id)->where('shop_id',$shopID)->get();
+        $result = Category::query()->where('parent_id', $parent_id)->where('shop_id', $shopID)->get();
         foreach ($result as $mainCategory) {
             $category = array();
             $category['id'] = $mainCategory->id;
@@ -96,10 +80,10 @@ class CategoryController extends Controller
             $category['shop_id'] = $mainCategory->shop_id;
             $category['parent_id'] = $mainCategory->parent_id;
             $category['status'] = $mainCategory->status;
-            $category['sub_categories'] = $this->getCategoryTreeForParentId($category['id'],$category['shop_id']);
+            $category['sub_categories'] = $this->getCategoryTreeForParentId($category['id'], $category['shop_id']);
             $categories[] = $category;
         }
         return $categories;
     }
-    
+
 }
