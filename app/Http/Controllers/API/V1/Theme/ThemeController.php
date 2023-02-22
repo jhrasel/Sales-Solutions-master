@@ -6,13 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\ActiveTheme;
 use App\Models\Shop;
 use App\Models\Theme;
-use App\Models\Page;
 use App\Models\ThemeEdit;
 use App\Models\ThemeImage;
 use App\Traits\sendApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+
 
 class ThemeController extends Controller
 {
@@ -89,6 +90,7 @@ class ThemeController extends Controller
     public function update(Request $request, $id): JsonResponse
     {
 
+
         $data = ThemeEdit::query()->findOrFail($id);
         if ($request->hasFile('logo')) {
             $file = $request->file('logo')->getClientOriginalName();
@@ -97,21 +99,32 @@ class ThemeController extends Controller
             $data->logo = $image;
             $data->save();
         }
-
         if ($request->input('gallery') !== null) {
+
             foreach (json_decode($request->input('gallery')) as $item) {
-                $file = time().'-'.$item['file_name']->getClientOriginalName();
+
+                $img = preg_replace('/^data:image\/\w+;base64,/', '', $item->file_name);
+                $fileformat = explode(';', $item->file_name)[0];
+                $type = explode('/', $fileformat)[1];
+
+                $im = base64_decode($img);
+                $file = time().'-gallery'.'.'.$type;
                 $path = '/themes/images/gallery';
-                $image = $item->storeAs($path, $file, 'local');
+
+                $i = Storage::disk('local')->put($path . '/' . $file, $im);
+
                 $gallery = ThemeImage::query()->create([
                     'theme_edit_id' => $id,
-                    'type' => $item['type'],
-                    'file_name' => $image
+                    'type' => $item->type,
+                    'file_name' => $file
                 ]);
+
+
+
             }
         }
 
-        $data->update($request->except('logo'));
+        $data->update($request->except('logo', 'gallery'));
         $data->load('gallery');
 
         return $this->sendApiResponse($data, 'Data Updated Successfully');
@@ -124,7 +137,7 @@ class ThemeController extends Controller
             'theme_id' => ['required'],
         ]);
         $theme = Theme::query()->where('id', $request->input('theme_id'))->first();
-        
+
 
         if (!$theme) {
             return $this->sendApiResponse('', 'Theme not available right now', 'themeNotFound', [], 401);
@@ -167,10 +180,10 @@ class ThemeController extends Controller
             ]);
         }
         $active_themes = ActiveTheme::query()->where('shop_id', $shop->shop_id)->pluck('theme_id');
-	
+
 
         $theme = Theme::query()->with('media')->with('page')->where('type', $request->input('type'))->whereIn('id', $active_themes)->get();
-        
+
 
         if ($theme->isEmpty()) {
             return $this->sendApiResponse('', 'No theme has been imported', 'themeNotFound', []);
