@@ -75,7 +75,7 @@ class ForgetPasswordController extends MerchantBaseController
         }
 
         $merchant->update([
-            'password' => Hash::make($request->input('password')),
+            'password' => $request->input('password'),
         ]);
 
         return $this->sendApiResponse(new MerchantResource($merchant), 'Password has been changed successfully');

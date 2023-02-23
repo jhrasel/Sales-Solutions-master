@@ -14,11 +14,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-if(Carbon::now()->setTimezone('Asia/Dhaka')->format('Y-m-d g:i:s') < Carbon::create(2023, 01, 10, 18, 0, 0)->format('Y-m-d g:i:s')) {
-    Route::any('{query}', function () {
-        return view('comingsoon::comingsoon');
-    })->where('query', '.*');
-}
 
 Route::get('/', [\App\Http\Controllers\General\HomeController::class, 'index'])->name('home');
 Route::get('/signup', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'index'])->name('merchant.register');

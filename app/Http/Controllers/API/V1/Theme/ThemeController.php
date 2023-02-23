@@ -6,14 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\ActiveTheme;
 use App\Models\Shop;
 use App\Models\Theme;
+use App\Models\Page;
 use App\Models\ThemeEdit;
 use App\Models\ThemeImage;
 use App\Traits\sendApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
-
 
 class ThemeController extends Controller
 {
@@ -70,15 +69,25 @@ class ThemeController extends Controller
 
         $theme = ThemeEdit::query()->create($data);
         if ($request->input('gallery') !== null) {
-            foreach ($request->input('gallery') as $item) {
-                $file = time().'-'.$item['file_name']->getClientOriginalName();
+
+            foreach (json_decode($request->input('gallery')) as $item) {
+
+                $img = preg_replace('/^data:image\/\w+;base64,/', '', $item->file_name);
+                $fileformat = explode(';', $item->file_name)[0];
+                $type = explode('/', $fileformat)[1];
+
+                $im = base64_decode($img);
+                $file = time().'-gallery'.'.'.$type;
                 $path = '/themes/images/gallery';
-                $image = $item->storeAs($path, $file, 'local');
+
+                $i = \Storage::disk('local')->put($path . '/' . $file, $im);
+
                 $gallery = ThemeImage::query()->create([
                     'theme_edit_id' => $theme->id,
-                    'type' => $item['type'],
-                    'file_name' => $image
+                    'type' => $item->type,
+                    'file_name' => $file
                 ]);
+
             }
         }
         $theme->load('gallery');
@@ -90,7 +99,6 @@ class ThemeController extends Controller
     public function update(Request $request, $id): JsonResponse
     {
 
-
         $data = ThemeEdit::query()->findOrFail($id);
         if ($request->hasFile('logo')) {
             $file = $request->file('logo')->getClientOriginalName();
@@ -99,6 +107,7 @@ class ThemeController extends Controller
             $data->logo = $image;
             $data->save();
         }
+
         if ($request->input('gallery') !== null) {
 
             foreach (json_decode($request->input('gallery')) as $item) {
@@ -111,7 +120,7 @@ class ThemeController extends Controller
                 $file = time().'-gallery'.'.'.$type;
                 $path = '/themes/images/gallery';
 
-                $i = Storage::disk('local')->put($path . '/' . $file, $im);
+                $i = \Storage::disk('local')->put($path . '/' . $file, $im);
 
                 $gallery = ThemeImage::query()->create([
                     'theme_edit_id' => $id,
@@ -119,12 +128,10 @@ class ThemeController extends Controller
                     'file_name' => $file
                 ]);
 
-
-
             }
         }
 
-        $data->update($request->except('logo', 'gallery'));
+        $data->update($request->except('logo'));
         $data->load('gallery');
 
         return $this->sendApiResponse($data, 'Data Updated Successfully');
