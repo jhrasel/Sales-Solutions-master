@@ -59,7 +59,8 @@ class MerchantController extends AdminBaseController
             ->latest();
 
         if ($request->filled('search')) {
-            $query->where('name', 'LIKE', '%' . $request->input('search') . '%');
+            $query->where('name', 'LIKE', '%' . $request->input('search') . '%')
+                ->orWhere('phone', 'LIKE', '%' . $request->input('search') . '%');
         }
         if ($request->filled('status')) {
             $query->where('status', $request->input('status'));
@@ -81,7 +82,7 @@ class MerchantController extends AdminBaseController
     public function destroy(User $merchant)
     {
         $shop = Shop::query()->where('user_id', $merchant->id)->first();
-        if($shop) {
+        if ($shop) {
             $shop->delete();
         }
         $merchant->delete();

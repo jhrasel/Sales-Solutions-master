@@ -8,23 +8,34 @@ use App\Http\Requests\StaffUpdateRequest;
 use App\Models\Role;
 use App\Models\Traits\Status;
 use App\Models\User;
+use App\Traits\sendApiResponse;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 
 class StaffController extends AdminBaseController
 {
+    use sendApiResponse;
     /**
      * @return Application|Factory|View
      */
     public function index()
     {
+        return view('panel.staffs.index');
+    }
+
+    public function getStafflist(): JsonResponse
+    {
         $roles = Role::all();
-        $staffs = User::query()->with('roles')->where('role', User::STAFF)->paginate();
-        return view('panel.staffs.index', compact('staffs', 'roles'));
+        $staffs = User::query()->with('roles')->where('role', User::STAFF)->paginate($this->limit());
+        if ($staffs->isEmpty()) {
+            return $this->sendApiResponse('', 'No data available', 'NotAvailable');
+        }
+        return $this->sendApiResponse($staffs, '', '',  ['roles' => $roles]);
     }
 
     /**

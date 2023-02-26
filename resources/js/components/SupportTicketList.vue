@@ -7,7 +7,7 @@
             <!-- Header -->
             <div class="row d_flex">
 
-                <div class="col-lg-4">
+                <div class="col-lg-3">
 
                     <div class="header_part d_flex">
 
@@ -33,82 +33,43 @@
 
                 </div>
 
-                <div class="col-lg-8">
+                <div class="col-lg-9">
 
                     <div class="FilterBy d_flex justify-content-end">
 
                         <!-- Filter By Item -->
                         <div class="FilterBy_item d_flex">
-                            <h3>Filter By:</h3>
-                            <div class="dropdown_part">
-                            <span class="dropdown-toggle d_flex" id="dropdownMenuButton1" data-bs-toggle="dropdown"
-                                  aria-expanded="false">
-                                Joining Date
-                                <div class="arrow">
-                                    <svg width="11" height="6" viewBox="0 0 11 6" fill="none"
-                                         xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M0.244629 0.501221L5.40989 5.66649L10.5752 0.501221H0.244629Z"
-                                              fill="#747474"/>
-                                    </svg>
-                                </div>
-                            </span>
-
-                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-
-                                    <li><a class="dropdown-item" href="#">Action</a></li>
-                                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
-
-                                    <!-- up arrow -->
-                                    <div class="up_arrow">
-                                        <svg width="11" height="6" viewBox="0 0 11 6" fill="none"
-                                             xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M10.3306 5.16528L5.1653 1.6953e-05L3.48091e-05 5.16528L10.3306 5.16528Z"
-                                                fill="#F3ECFF"/>
-                                        </svg>
-                                    </div>
-
-                                </ul>
-
-                            </div>
-
+                            <input type="date" class="form-control" name="joining_date">
                         </div>
 
                         <!-- Filter By Item -->
                         <div class="FilterBy_item d_flex">
-                            <h3>Filter By:</h3>
-                            <div class="dropdown_part">
-                            <span class="dropdown-toggle d_flex" id="dropdownMenuButton1" data-bs-toggle="dropdown"
-                                  aria-expanded="false">
-                                Status
-                                <div class="arrow">
-                                    <svg width="11" height="6" viewBox="0 0 11 6" fill="none"
-                                         xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M0.244629 0.501221L5.40989 5.66649L10.5752 0.501221H0.244629Z"
-                                              fill="#747474"/>
-                                    </svg>
-                                </div>
-                            </span>
-
-                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-
-                                    <li><a class="dropdown-item" href="#">Action</a></li>
-                                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
-
-                                    <!-- up arrow -->
-                                    <div class="up_arrow">
-                                        <svg width="11" height="6" viewBox="0 0 11 6" fill="none"
-                                             xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M10.3306 5.16528L5.1653 1.6953e-05L3.48091e-05 5.16528L10.3306 5.16528Z"
-                                                fill="#F3ECFF"/>
+                            <div class="dropdown_part form-control">
+                                <span class="dropdown-toggle d_flex" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <p>Select Status</p>
+                                    <div class="arrow">
+                                        <svg width="11" height="6" viewBox="0 0 11 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M0.244629 0.501221L5.40989 5.66649L10.5752 0.501221H0.244629Z" fill="#747474"></path>
                                         </svg>
                                     </div>
-
+                                </span>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                    <li>
+                                        <a class="dropdown-item" href="#">Active</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#">Blocked</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#">Inactive</a>
+                                    </li><!-- up arrow -->
+                                    <div class="up_arrow">
+                                        <svg width="11" height="6" viewBox="0 0 11 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M10.3306 5.16528L5.1653 1.6953e-05L3.48091e-05 5.16528L10.3306 5.16528Z" fill="#F3ECFF">
+                                            </path>
+                                        </svg>
+                                    </div>
                                 </ul>
-
                             </div>
 
                         </div>
@@ -117,7 +78,7 @@
                         <div class="FilterBy_item">
                             <div class="custome_input">
 
-                                <input type="text" name="" placeholder="Search here...">
+                                <input type="text" name="" class="form-control form-control-lg" placeholder="Search here...">
 
                                 <div class="search">
                                     <svg width="18" height="18" viewBox="0 0 18 18" fill="none"

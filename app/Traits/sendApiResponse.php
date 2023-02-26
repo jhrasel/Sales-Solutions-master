@@ -12,7 +12,7 @@ trait sendApiResponse {
     {
         $response = [
             'message' => $message,
-            'success' => $errorType === '' ? true : false,
+            'success' => $errorType === '',
             'error_type' => $errorType,
         ] + $extra;
 

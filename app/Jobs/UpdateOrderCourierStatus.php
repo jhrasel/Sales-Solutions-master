@@ -9,7 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
+
 
 class UpdateOrderCourierStatus implements ShouldQueue
 {
@@ -32,11 +32,6 @@ class UpdateOrderCourierStatus implements ShouldQueue
      */
     public function handle()
     {
-        $orders = Order::query()->where('courier_status', true)->get();
-        Log::info('hello');
 
-        foreach ($orders as $order) {
-            Log::info($order);
-        }
     }
 }

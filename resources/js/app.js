@@ -23,6 +23,7 @@ import SupportTicket from "./components/SupportTicket.vue";
 import SupportTicketList from "./components/SupportTicketList.vue";
 import Themes from "./components/Themes.vue";
 import Modal from "./components/Modal.vue";
+import Staffs from "./components/Staffs.vue";
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
@@ -36,5 +37,6 @@ app.component('support-ticket', SupportTicket)
 app.component('support-ticket-list', SupportTicketList)
 app.component('support-ticket-details', SupportTicketDetails)
 app.component('themes', Themes)
+app.component('staffs', Staffs)
 app.component('modal', Modal)
 app.mount('#app')

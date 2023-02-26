@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Hash;
 class SettingController extends MerchantBaseController
 {
     use sendApiResponse;
+
     public function business_info(MerchantSettingRequest $request): JsonResponse
     {
         $shop = Shop::with('shop_logo')->where('shop_id', $request->header('shop-id'))->first();
@@ -478,8 +479,11 @@ class SettingController extends MerchantBaseController
 
     public function getAdvancePaymentStatus(): JsonResponse
     {
-        $shop = WebsiteSetting::query()->where('shop_id', request()->header('shop-id'))->first();
+        $advanced_pay_status = WebsiteSetting::query()->where('shop_id', request()->header('shop-id'))->first();
 
-        return $this->sendApiResponse(new AdvancePaymentResource($shop));
+        if(!$advanced_pay_status) {
+            return $this->sendApiResponse('', 'No data found with this', 'NotFound');
+        }
+        return $this->sendApiResponse(new AdvancePaymentResource($advanced_pay_status));
     }
 }

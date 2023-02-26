@@ -10,7 +10,7 @@ class AdminBaseController extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    protected function limit($default = 10): int
+    protected function limit($default = 5): int
     {
         return (int) request()->input('limit', $default);
     }

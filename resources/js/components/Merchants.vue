@@ -28,10 +28,9 @@
 
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
 
-                            <li v-for="status in statusList" @click="filterMerchants(status)"><a class="dropdown-item"
-                                                                                                 href="#">{{
-                                    status
-                                }}</a></li>
+                            <li v-for="status in statusList" @click="filterMerchants(status)">
+                                <a class="dropdown-item" href="#">{{ capitalized(status) }}</a>
+                            </li>
 
                             <!-- up arrow -->
                             <div class="up_arrow">
@@ -82,67 +81,72 @@
 
                 <table class="table">
                     <tbody>
-                    <tr>
-                        <th>SL</th>
-                        <th>Company Name</th>
-                        <th>Client Name</th>
-                        <th>Client Contact No.</th>
-                        <th>Joining Date</th>
-                        <th>Next Due Date</th>
-                        <th>Status</th>
-                        <th>Login</th>
-                        <th>Action</th>
-                    </tr>
+                        <tr>
+                            <th>SL</th>
+                            <th>Company Name</th>
+                            <th>Client Name</th>
+                            <th>Client Contact No.</th>
+                            <th>Joining Date</th>
+                            <th>Next Due Date</th>
+                            <th>Status</th>
+                            <th>Login</th>
+                            <th>Action</th>
+                        </tr>
 
-                    <tr v-for="(merchant, key) in merchants.data" :key="merchant.id">
-                        <td>{{ key + 1 }}</td>
-                        <td class="companyName">{{ merchant?.shop?.name }}</td>
-                        <td class="name"><a :href="'/panel/merchants/'+`${merchant.id}`">{{
-                                capitalized(merchant.name)
-                            }}</a></td>
-                        <td>{{ merchant.phone }}</td>
-                        <td>{{ merchant.created_at }}</td>
-                        <td></td>
-                        <td>
-                            <div class="dropdown_part">
-                            <span class="dropdown-toggle d_flex" id="dropdownMenuButton1" data-bs-toggle="dropdown"
-                                  aria-expanded="false">
-                                {{ capitalized(merchant.status) }}
-                                <div class="arrow">
-                                    <svg width="11" height="6" viewBox="0 0 11 6" fill="none"
-                                         xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M0.244629 0.501221L5.40989 5.66649L10.5752 0.501221H0.244629Z"
-                                              fill="#747474"/>
-                                    </svg>
-                                </div>
-                            </span>
-
-                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-
-                                    <li v-for="status in statusList" @click="updateStatus(merchant.id, status)"><a
-                                        class="dropdown-item" id="change-status">{{ capitalized(status) }}</a></li>
-
-                                    <!-- up arrow -->
-                                    <div class="up_arrow">
+                        <tr v-for="(merchant, key) in merchants.data" :key="merchant.id" v-if="merchants?.data?.length > 0">
+                            <td>{{ key + 1 }}</td>
+                            <td class="companyName">{{ merchant?.shop?.name }}</td>
+                            <td class="name"><a :href="'/panel/merchants/'+`${merchant.id}`">{{
+                                    capitalized(merchant.name)
+                                }}</a></td>
+                            <td>{{ merchant.phone }}</td>
+                            <td>{{ merchant.created_at }}</td>
+                            <td></td>
+                            <td>
+                                <div class="dropdown_part">
+                                <span class="dropdown-toggle d_flex" id="dropdownMenuButton1" data-bs-toggle="dropdown"
+                                      aria-expanded="false">
+                                    {{ capitalized(merchant.status) }}
+                                    <div class="arrow">
                                         <svg width="11" height="6" viewBox="0 0 11 6" fill="none"
                                              xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M10.3306 5.16528L5.1653 1.6953e-05L3.48091e-05 5.16528L10.3306 5.16528Z"
-                                                fill="#F3ECFF"/>
+                                            <path d="M0.244629 0.501221L5.40989 5.66649L10.5752 0.501221H0.244629Z"
+                                                  fill="#747474"/>
                                         </svg>
                                     </div>
+                                </span>
 
-                                </ul>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
 
-                            </div>
-                        </td>
-                        <td>
-                            <a href="">Login</a>
-                        </td>
-                        <td>
-                            <a @click="deleteMerchant(merchant.id)" href="javascript:;"><i class="fa fa-trash-alt"></i></a>
-                        </td>
-                    </tr>
+                                        <li v-for="status in statusList" @click="updateStatus(merchant.id, status)"><a
+                                            class="dropdown-item" id="change-status">{{ capitalized(status) }}</a></li>
+
+                                        <!-- up arrow -->
+                                        <div class="up_arrow">
+                                            <svg width="11" height="6" viewBox="0 0 11 6" fill="none"
+                                                 xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="M10.3306 5.16528L5.1653 1.6953e-05L3.48091e-05 5.16528L10.3306 5.16528Z"
+                                                    fill="#F3ECFF"/>
+                                            </svg>
+                                        </div>
+
+                                    </ul>
+
+                                </div>
+                            </td>
+                            <td>
+                                <a href="">Login</a>
+                            </td>
+                            <td>
+                                <a @click="deleteMerchant(merchant.id)" href="javascript:;"><i class="fa fa-trash-alt"></i></a>
+                            </td>
+                        </tr>
+                        <tr v-else>
+                           <td colspan="9" style="text-align: center">
+                               No users Found!
+                           </td>
+                        </tr>
                     </tbody>
                 </table>
 
@@ -188,6 +192,8 @@ export default {
     mounted() {
         this.fetchMerchants();
         this.fetchStatues();
+
+
     },
     methods: {
         capitalized(name) {
@@ -236,10 +242,11 @@ export default {
             this.statusText = ''
             this.$refs['search'].value = ''
             this.$refs['joining_date'].value = ''
+            this.fetchMerchants();
+
         },
         setCurrentPage(page) {
             this.currentPage = page
-
             this.fetchMerchants(page)
         },
         nextPage(url) {
