@@ -156,13 +156,16 @@
                             @click="prevPage(merchants.prev_page_url)">
                             <a class="page-link" tabindex="-1">Previous</a>
                         </li>
-                        <li v-for="pageNumber in totalPage"
-                            v-if="Math.abs(pageNumber - currentPage) > 12 || pageNumber === totalPage - 1 || pageNumber === 0"
-                            class="page-item" :class="{active: currentPage === pageNumber }">
-                            <a class="page-link" @click="setCurrentPage(pageNumber)"
-                               :class="{disabled: currentPage === pageNumber , last: (pageNumber === totalPage - 1 && Math.abs(pageNumber - currentPage) > 3), first:(pageNumber === 0 && Math.abs(pageNumber - currentPage) > 3)}">{{
-                                    pageNumber
-                                }}</a>
+                        <li v-for="(pageNumber, i) in totalPage"
+                            class="page-item" :class="{active: currentPage === pageNumber }"
+                        >
+                            <a class="page-link" @click="setCurrentPage(pageNumber) "
+                               v-if="i+1 === 1 || (currentPage - 3 <= i && currentPage + 3 >= i || i === currentPage || i+1 === totalPage)"
+                               :class="{disabled: currentPage === pageNumber , last: (pageNumber === totalPage - 1 && Math.abs(pageNumber - currentPage) > 3), first:(pageNumber === 0 && Math.abs(pageNumber - currentPage) > 3)}">
+                                {{ pageNumber }}
+                            </a>
+                            <a class="page-link" v-else-if="i === currentPage - (3+1) || i === currentPage + (3+1)">...</a>
+
                         </li>
                         <li class="page-item" :class="{disabled: currentPage === totalPage}"
                             @click="nextPage(merchants['next_page_url'])">
