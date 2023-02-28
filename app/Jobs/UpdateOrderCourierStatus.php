@@ -36,7 +36,7 @@ class UpdateOrderCourierStatus implements ShouldQueue
     {
         $orders = Order::query()->where('courier_entry', true)
             ->where('order_status', '!=', 'pending')
-            ->orWhere('order_status', '!=', 'cancel')
+            ->orWhere('order_status', '!=', 'Cancelled')
             ->orWhere('order_status', '!=', 'delivered')
             ->orWhere('consignment_id', '!=', null)
             ->orWhere('tracking_code', '!=', null)

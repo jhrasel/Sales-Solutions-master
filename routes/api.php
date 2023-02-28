@@ -68,8 +68,6 @@ Route::group(['prefix' => 'v1'], function () {
 });
 
 
-
-
 Route::group(['prefix' => 'v1/client'], function () {
     Route::post('forget-password', [ForgetPasswordController::class, 'forgetPassword']);
     Route::post('/otp-verify', [ForgetPasswordController::class, 'verifyOtp']);

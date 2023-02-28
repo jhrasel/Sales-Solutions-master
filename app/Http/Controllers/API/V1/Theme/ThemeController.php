@@ -35,7 +35,11 @@ class ThemeController extends Controller
 
     public function getListByPage(Request $request, $page): JsonResponse
     {
-        $query = ThemeEdit::query()->with('gallery')->where('shop_id', $request->header('shop-id'))->where('page', $page)->get();
+        $query = ThemeEdit::query()->with('gallery')
+            ->where('shop_id', $request->header('shop-id'))
+            ->where('page', $page)
+            ->where('title', $request->input('title'))
+            ->get();
 
         if ($query->isEmpty()) {
             return $this->sendApiResponse('', 'No data available');
@@ -98,6 +102,7 @@ class ThemeController extends Controller
 
     public function update(Request $request, $id): JsonResponse
     {
+        $old_gallery = ThemeImage::query()->where('theme_edit_id', $id)->get();
 
         $data = ThemeEdit::query()->findOrFail($id);
         if ($request->hasFile('logo')) {
@@ -109,6 +114,14 @@ class ThemeController extends Controller
         }
 
         if ($request->input('gallery') !== null) {
+
+            $old_gallery = ThemeImage::query()->where('theme_edit_id', $id)->get();
+
+            if($old_gallery->isNotEmpty()) {
+                foreach($old_gallery as $old_image){
+                    $old_image->delete();
+                }
+            }
 
             foreach (json_decode($request->input('gallery')) as $item) {
 
@@ -125,13 +138,13 @@ class ThemeController extends Controller
                 $gallery = ThemeImage::query()->create([
                     'theme_edit_id' => $id,
                     'type' => $item->type,
-                    'file_name' => $file
+                    'file_name' => $path.'/'.$file
                 ]);
 
             }
         }
 
-        $data->update($request->except('logo'));
+        $data->update($request->except('logo', 'gallery'));
         $data->load('gallery');
 
         return $this->sendApiResponse($data, 'Data Updated Successfully');
@@ -187,7 +200,7 @@ class ThemeController extends Controller
             ]);
         }
         $active_themes = ActiveTheme::query()->where('shop_id', $shop->shop_id)->pluck('theme_id');
-
+        $page_id = ActiveTheme::query()->where('shop_id', $shop->shop_id)->pluck('page_id');
 
         $theme = Theme::query()->with('media')->with('page')->where('type', $request->input('type'))->whereIn('id', $active_themes)->get();
 
