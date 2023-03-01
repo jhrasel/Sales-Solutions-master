@@ -6,13 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\ActiveTheme;
 use App\Models\Shop;
 use App\Models\Theme;
-use App\Models\Page;
 use App\Models\ThemeEdit;
 use App\Models\ThemeImage;
 use App\Traits\sendApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class ThemeController extends Controller
 {
@@ -84,12 +85,12 @@ class ThemeController extends Controller
                 $file = time().'-gallery'.'.'.$type;
                 $path = '/themes/images/gallery';
 
-                $i = \Storage::disk('local')->put($path . '/' . $file, $im);
+                Storage::disk('local')->put($path . '/' . $file, $im);
 
-                $gallery = ThemeImage::query()->create([
+                ThemeImage::query()->create([
                     'theme_edit_id' => $theme->id,
                     'type' => $item->type,
-                    'file_name' => $file
+                    'file_name' => $path.'/'.$file
                 ]);
 
             }
@@ -102,7 +103,6 @@ class ThemeController extends Controller
 
     public function update(Request $request, $id): JsonResponse
     {
-        $old_gallery = ThemeImage::query()->where('theme_edit_id', $id)->get();
 
         $data = ThemeEdit::query()->findOrFail($id);
         if ($request->hasFile('logo')) {
@@ -112,35 +112,53 @@ class ThemeController extends Controller
             $data->logo = $image;
             $data->save();
         }
-
         if ($request->input('gallery') !== null) {
+            $gallery = [];
 
+            foreach (json_decode($request->input('gallery')) as $item) {
+
+                if(Str::contains($item->file_name, 'base64')){
+
+                    $img = preg_replace('/^data:image\/\w+;base64,/', '', $item->file_name);
+
+                    $fileformat = explode(';', $item->file_name)[0];
+                    $type = explode('/', $fileformat)[1];
+
+                    $im = base64_decode($img);
+                    $file = time().'-gallery'.'.'.$type;
+                    $path = '/themes/images/gallery';
+
+                    Storage::disk('local')->put($path . '/' . $file, $im);
+                    $image = [
+                        'type' => $item->type,
+                        'file_name' => $path.'/'.$file
+                    ];
+                    array_push($gallery, $image);
+
+                } else {
+                    $image = [
+                        'type' => $item->type,
+                        'file_name' => $item->file_name
+                    ];
+                    array_push($gallery, $image);
+                }
+
+            }
             $old_gallery = ThemeImage::query()->where('theme_edit_id', $id)->get();
+
 
             if($old_gallery->isNotEmpty()) {
                 foreach($old_gallery as $old_image){
                     $old_image->delete();
                 }
             }
+            foreach($gallery as $gimage)  {
 
-            foreach (json_decode($request->input('gallery')) as $item) {
-
-                $img = preg_replace('/^data:image\/\w+;base64,/', '', $item->file_name);
-                $fileformat = explode(';', $item->file_name)[0];
-                $type = explode('/', $fileformat)[1];
-
-                $im = base64_decode($img);
-                $file = time().'-gallery'.'.'.$type;
-                $path = '/themes/images/gallery';
-
-                $i = \Storage::disk('local')->put($path . '/' . $file, $im);
-
-                $gallery = ThemeImage::query()->create([
+                ThemeImage::query()->create([
                     'theme_edit_id' => $id,
-                    'type' => $item->type,
-                    'file_name' => $path.'/'.$file
+                    'type' => $gimage['type'],
+                    'file_name' => $gimage['file_name']
                 ]);
-
             }
         }
 
@@ -200,7 +218,7 @@ class ThemeController extends Controller
             ]);
         }
         $active_themes = ActiveTheme::query()->where('shop_id', $shop->shop_id)->pluck('theme_id');
-        $page_id = ActiveTheme::query()->where('shop_id', $shop->shop_id)->pluck('page_id');
+        ActiveTheme::query()->where('shop_id', $shop->shop_id)->pluck('page_id');
 
         $theme = Theme::query()->with('media')->with('page')->where('type', $request->input('type'))->whereIn('id', $active_themes)->get();
 

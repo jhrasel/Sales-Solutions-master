@@ -29,6 +29,8 @@ class AlterMerchantCouriersChangeMerchantId extends Migration
      */
     public function down()
     {
-
+        Schema::table('merchant_couriers', function (Blueprint $table) {
+            $table->dropColumn('shop_id');
+        });
     }
 }
