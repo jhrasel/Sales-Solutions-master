@@ -19,12 +19,10 @@ class CreateMerchantInfosTable extends Migration
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
             $table->string('short_address')->default("");
-            $table->text('address')->nullable();
             $table->string('fb_page')->default("");
             $table->string('short_description')->default("");
             $table->text('description')->nullable();
             $table->text('other_info')->nullable();
-            $table->float('allocate_balance', 8, 2)->default(0);
             $table->timestamps();
         });
     }

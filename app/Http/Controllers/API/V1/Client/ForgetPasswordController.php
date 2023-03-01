@@ -55,7 +55,7 @@ class ForgetPasswordController extends MerchantBaseController
 
         if ($user->otp === $request->input('otp')) {
             $user['otp_verified'] = true;
-            return $this->sendApiResponse($user, 'Otp has been verified');
+            return $this->sendApiResponse(new MerchantResource($user), 'Otp has been verified');
         } else {
             return $this->sendApiResponse('', 'Invalid Otp', 'Invalid');
         }

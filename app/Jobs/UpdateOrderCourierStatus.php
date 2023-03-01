@@ -54,6 +54,5 @@ class UpdateOrderCourierStatus implements ShouldQueue
             }
         }
 
-
     }
 }

@@ -118,18 +118,11 @@ class User extends Authenticatable
         return Carbon::parse($value)->toFormattedDateString();
     }
 
-    /**
-     * Return The shop that belongs to this User
-     *
-     */
     public function shop(): HasOne
     {
         return $this->hasOne(Shop::class);
     }
 
-    /**
-     * @return HasOne
-     */
     public function merchantinfo(): HasOne
     {
         return $this->hasOne(MerchantInfo::class);

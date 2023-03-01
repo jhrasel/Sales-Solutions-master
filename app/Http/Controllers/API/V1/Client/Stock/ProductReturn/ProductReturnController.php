@@ -15,7 +15,7 @@ class ProductReturnController extends Controller
     {
         try {
 
-            $merchant = User::where('role', 'merchant')->find(auth()->user()->id);
+            $merchant = User::where('role', 'merchant')->find($request->header('id'));
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
@@ -23,10 +23,10 @@ class ProductReturnController extends Controller
                 ], 404);
             }
 
-           
+
             $orders = Order::with('order_details')->where('shop_id', $merchant->shop->id)->where('order_status','returned')->get();
 
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $orders,
@@ -43,7 +43,7 @@ class ProductReturnController extends Controller
     {
         try {
 
-            $merchant = User::where('role', 'merchant')->find(auth()->user()->id);
+            $merchant = User::where('role', 'merchant')->find($request->header('id'));
             if (!$merchant) {
                 return response()->json([
                     'success' => false,

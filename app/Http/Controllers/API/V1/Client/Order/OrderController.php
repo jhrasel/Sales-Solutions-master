@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Shop;
 
@@ -62,68 +63,69 @@ class OrderController extends Controller
 
     public function store(OrderRequest $request): JsonResponse
     {
-        $customer = User::query()->firstOrCreate([
-            'phone' => $request->input('customer_phone'),
-            'role' => User::CUSTOMER
-        ], [
-            'name' => $request->input('customer_name'),
-            'email' => 'customer' . rand(1000, 9999) . '@gmail.com',
-            'address' => $request->input('customer_address'),
-            'password' => Hash::make(12345678),
-        ]);
-
-        $order = Order::query()->create([
-            'order_no' => rand(100, 9999),
-            'shop_id' => $request->header('shop-id'),
-            'user_id' => $request->header('id'),
-            'customer_id' => $customer->id,
-            'address' => $request->input('customer_address')
-        ]);
-
-        $grand_total = 0;
-        $shipping_cost = 0;
-        //store order details
-        foreach ($request->input('product_id') as $key => $item) {
-
-            $product = Product::query()->find($item);
-
-            $order->order_details()->create([
-                'product_id' => $item,
-                'product_qty' => $request->input('product_qty')[$key],
-                'unit_price' => $product->price,
+        return DB::transaction(function() use ($request) {
+            $customer = User::query()->firstOrCreate([
+                'phone' => $request->input('customer_phone'),
+                'role' => User::CUSTOMER
+            ], [
+                'name' => $request->input('customer_name'),
+                'email' => 'customer' . rand(1000, 9999) . '@gmail.com',
+                'address' => $request->input('customer_address'),
+                'password' => Hash::make(12345678),
             ]);
 
-            $grand_total += $product->price * $request->input('product_qty')[$key];
+            $order = Order::query()->create([
+                'order_no' => rand(100, 9999),
+                'shop_id' => $request->header('shop-id'),
+                'user_id' => $request->header('id'),
+                'customer_id' => $customer->id,
+                'address' => $request->input('customer_address')
+            ]);
 
-            if($product->delivery_charge === Product::PAID) {
-                $shipping_cost += $product[$request->input('delivery_location')];
+            $grand_total = 0;
+            $shipping_cost = 0;
+            //store order details
+            foreach ($request->input('product_id') as $key => $item) {
+
+                $product = Product::query()->find($item);
+
+                $order->order_details()->create([
+                    'product_id' => $item,
+                    'product_qty' => $request->input('product_qty')[$key],
+                    'unit_price' => $product->price,
+                ]);
+
+                $grand_total += $product->price * $request->input('product_qty')[$key];
+
+                if ($product->delivery_charge === Product::PAID) {
+                    $shipping_cost += $product[$request->input('delivery_location')];
+                }
+
+            }
+            $order->shipping_cost = $shipping_cost;
+            $order->grand_total = $grand_total;
+            $order->save();
+
+            $order->load('customer', 'order_details');
+            foreach ($order->order_details as $details) {
+                $details->product->update([
+                    'product_qty' => $details->product->product_qty - $details->product_qty
+                ]);
             }
 
-        }
-        $order->shipping_cost = $shipping_cost;
-        $order->grand_total = $grand_total;
-        $order->save();
+            $shop = Shop::query()->where('shop_id', $request->header('shop-id'))->first();
 
-        $order->load('customer', 'order_details');
-        foreach ($order->order_details as $details) {
-            $details->product->update([
-                'product_qty' => $details->product->product_qty - $details->product_qty
-            ]);
-        }
+            if (!$shop->sms_balance < 1) {
+                $shop->sms_balance = $shop->sms_balance - 1;
+                $shop->sms_sent = $shop->sms_sent + 1;
+                $shop->save();
 
-        $shop = Shop::query()->where('shop_id', $request->header('shop-id'))->first();
+                $sms = new Sms();
+                $sms->sendSms($request->input('customer_phone'), $order->order_no, $shop->name);
+            }
 
-        if (!$shop->sms_balance < 1) {
-            $shop->sms_balance = $shop->sms_balance - 1;
-            $shop->sms_sent = $shop->sms_sent + 1;
-            $shop->save();
-
-            $sms = new Sms();
-            $sms->sendSms($request->input('customer_phone'), $order->order_no, $shop->name);
-        }
-
-        return $this->sendApiResponse($order, 'Order Created Successfully');
-
+            return $this->sendApiResponse($order, 'Order Created Successfully');
+        });
     }
 
     /**

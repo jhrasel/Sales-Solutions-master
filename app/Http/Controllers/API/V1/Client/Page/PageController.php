@@ -43,7 +43,7 @@ class PageController extends Controller
     public function store(PageRequest $request): JsonResponse
     {
         $page = new Page();
-        $page->user_id = auth()->user()->id;
+        $page->user_id = $request->header('id');
         $page->shop_id = $request->header('shop-id');
         $page->title = $request->input('title');
         $page->slug = Str::slug($request->input('title'));

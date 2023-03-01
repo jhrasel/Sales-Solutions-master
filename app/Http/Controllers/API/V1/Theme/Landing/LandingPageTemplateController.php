@@ -31,7 +31,7 @@ class LandingPageTemplateController extends Controller
     {
         try {
 
-            $merchant = User::where('role', 'merchant')->find(auth()->user()->id);
+            $merchant = User::where('role', 'merchant')->find($request->header('id'));
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
@@ -55,8 +55,8 @@ class LandingPageTemplateController extends Controller
                 $storeActiveTheme->user_id = $merchant->id;
                 $storeActiveTheme->landing_theme_id = $request->landing_theme_id;
                 $storeActiveTheme->multiple_theme_id = null;
-                $storeActiveTheme->save(); 
-                
+                $storeActiveTheme->save();
+
             }
 
             $activeTheme->landing_theme_id = $request->landing_theme_id;

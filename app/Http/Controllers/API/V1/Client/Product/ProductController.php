@@ -52,71 +52,71 @@ class ProductController extends Controller
      */
     public function store(ProductRequest $request)
     {
-        $product = new Product();
-        if(!$request->input('category_id')) {
+        return DB::transaction(function() use ($request) {
+            $product = new Product();
+            if(!$request->input('category_id')) {
 
-            $category = new Category;
-            $category->name = $request->input('category_name');
-            $category->slug = Str::slug($request->input('category_name'));
-            $category->user_id = auth()->user()->id;
-            $category->shop_id = $request->header('shop-id');
-            $category->status = 1;
-            $category->save();
+                $category = new Category;
+                $category->name = $request->input('category_name');
+                $category->slug = Str::slug($request->input('category_name'));
+                $category->user_id = $request->header('id');
+                $category->shop_id = $request->header('shop-id');
+                $category->status = 1;
+                $category->save();
 
-            $category_id = $category->id;
+                $category_id = $category->id;
 
-        } else {
-            $category_id = $request->category_id;
-        }
-        $product->category_id = $category_id;
-        $product->user_id = auth()->user()->id;
-        $product->shop_id = auth()->user()->shop->shop_id;
-        $product->product_name = $request->product_name;
-        $product->slug = Str::slug($request->product_name);
-        $product->price = $request->price;
-        $product->product_code = $request->product_code;
-        $product->product_qty = $request->product_qty;
-        $product->discount = $request->discount;
-        $product->short_description = $request->short_description;
-        $product->delivery_charge = $request->input('delivery_charge');
-
-        if($request->input('delivery_charge') === 'paid') {
-            $product->inside_dhaka = $request->input('inside_dhaka');
-            $product->outside_dhaka = $request->input('outside_dhaka');
-        } else {
-            $product->inside_dhaka = 0;
-            $product->outside_dhaka = 0;
-        }
-        $product->save();
-
-        //store product main image
-        $mainImageName = time() . '_main_image.' . $request->main_image->extension();
-        $request->main_image->move(public_path('images'), $mainImageName);
-        $media = new Media();
-        $media->name = '/images/' . $mainImageName;
-        $media->parent_id = $product->id;
-        $media->type = 'product_main_image';
-        $media->save();
-
-        $product['main_image'] = $media->name;
-
-
-        if ($request->hasFile('other_image')) {
-
-            foreach ($request->other_image as $key => $image) {
-                //store product other image
-                $otherImageName = time() . rand(1000, 9999) . '_other_image.' . $image->extension();
-                $image->move(public_path('images'), $otherImageName);
-                $mediaOther = new Media();
-                $mediaOther->name = '/images/' . $otherImageName;
-                $mediaOther->parent_id = $product->id;
-                $mediaOther->type = 'product_other_image';
-                $mediaOther->save();
-                $product['other_image_' . $key] = $mediaOther->name;
+            } else {
+                $category_id = $request->input('category_id');
             }
-        }
+            $product->category_id = $category_id;
+            $product->user_id = $request->header('id');
+            $product->shop_id = $request->header('shop-id');
+            $product->product_name = $request->input('product_name');
+            $product->slug = Str::slug($request->input('product_name')).'-'.Str::random('5');
+            $product->price = $request->input('price');
+            $product->product_code = $request->input('product_code');
+            $product->product_qty = $request->input('product_qty');
+            $product->discount = $request->input('discount');
+            $product->short_description = $request->input('short_description');
+            $product->delivery_charge = $request->input('delivery_charge');
 
-        return $this->sendApiResponse($product, 'Product created successfully');
+            if($request->input('delivery_charge') === 'paid') {
+                $product->inside_dhaka = $request->input('inside_dhaka');
+                $product->outside_dhaka = $request->input('outside_dhaka');
+            } else {
+                $product->inside_dhaka = 0;
+                $product->outside_dhaka = 0;
+            }
+            $product->save();
+
+            //store product main image
+            $mainImageName = time() . '_main_image.' . $request->main_image->extension();
+            $request->main_image->move(public_path('images'), $mainImageName);
+            $media = new Media();
+            $media->name = '/images/' . $mainImageName;
+            $media->parent_id = $product->id;
+            $media->type = 'product_main_image';
+            $media->save();
+
+            $product['main_image'] = $media->name;
+
+            if ($request->hasFile('other_image')) {
+
+                foreach ($request->other_image as $key => $image) {
+                    //store product other image
+                    $otherImageName = time() . rand(1000, 9999) . '_other_image.' . $image->extension();
+                    $image->move(public_path('images'), $otherImageName);
+                    $mediaOther = new Media();
+                    $mediaOther->name = '/images/' . $otherImageName;
+                    $mediaOther->parent_id = $product->id;
+                    $mediaOther->type = 'product_other_image';
+                    $mediaOther->save();
+                    $product['other_image_' . $key] = $mediaOther->name;
+                }
+            }
+            return $this->sendApiResponse($product, 'Product created successfully');
+        });
     }
 
     /**

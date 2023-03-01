@@ -24,7 +24,6 @@ class CreateUsersTable extends Migration
             $table->enum('role', ['admin', 'merchant', 'customer', 'staff',]);
             $table->string('otp')->nullable();
             $table->string('status')->default(User::STATUS_ACTIVE);
-            $table->string('api_token')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->timestamp('phone_verified_at')->nullable();
             $table->rememberToken();

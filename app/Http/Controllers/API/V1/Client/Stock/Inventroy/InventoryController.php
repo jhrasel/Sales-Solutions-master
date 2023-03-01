@@ -30,7 +30,7 @@ class InventoryController extends Controller
     {
         try {
 
-            $merchant = User::where('role', 'merchant')->find(auth()->user()->id);
+            $merchant = User::where('role', 'merchant')->find($request->header('id'));
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
@@ -63,7 +63,7 @@ class InventoryController extends Controller
         //return $request->all();
         try {
 
-            $merchant = User::where('role', 'merchant')->find(auth()->user()->id);
+            $merchant = User::where('role', 'merchant')->find($request->header('id'));
             if (!$merchant) {
                 return response()->json([
                     'success' => false,

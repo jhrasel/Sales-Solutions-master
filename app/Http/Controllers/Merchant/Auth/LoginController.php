@@ -80,46 +80,14 @@ class LoginController extends MerchantBaseController
             $merchant->shop()->create([
                 'name' => $request->input('shop_name'),
                 'domain' => $new_domain,
-		'sms_balance' => "50",
+		        'sms_balance' => "50",
                 'shop_id' => mt_rand(111111, 999999),
             ]);
             $merchant->merchantinfo()->create();
-            /*$this->create_subdomain($new_domain . '-dashboard', 'dashboard.funnelliner.com');
-            $this->create_subdomain($new_domain . '-web', 'web.funnelliner.com');
-            $url = $domain . '-dashboard.funnelliner.com';*/
-
-            $shop = Shop::query()->where('name', $request->input('shop_name'))->first();
-
-//            $user = 'FunnelLine';
-//            $password = 'upm664se';
-//            $sender_id = 'FunnelLiner';
-//            $msg = 'Dear '.$data['name'].' ,
-//Your registration successfully completed. Your Shop ID is '.$shop->shop_id.' .For bKash Payment Reference ID will be '.$shop->shop_id.' .Please pay your registration fee & active this account.
-//
-//Thank you.
-//
-//Funnelliner.Com';
-//            $url2 = "https://mshastra.com/sendurl.aspx";
-//            $data2 = [
-//                "user" => $user,
-//                "pwd" => $password,
-//                "type" => "text",
-//                "CountryCode" => "+880",
-//                "mobileno" => $data['phone'],
-//                "senderid" => $sender_id,
-//                "msgtext" => $msg,
-//            ];
-//            $ch = curl_init($url2);
-//            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-//            curl_setopt($ch, CURLOPT_POSTFIELDS, $data2);
-//            $register = curl_exec($ch);
-
             $sms = new Sms();
             $sms->sendVerifyOtp($merchant);
 
             return $this->sendApiResponse($merchant, 'Account created Successfully, Verify phone to Use our service');
-
-//            return redirect()->away('https://dashboard.funnelliner.com');
         } catch (\Exception $exception) {
             return $exception->getMessage();
         }
@@ -195,9 +163,9 @@ class LoginController extends MerchantBaseController
             ->first();
 
         if($user->otp === $request->input('otp')) {
-            $user->api_token = Str::random(64);
             $user->phone_verified_at = now();
             $user->save();
+
             return $this->sendApiResponse(new MerchantResource($user), 'Account Verification Successful');
 
         } else {

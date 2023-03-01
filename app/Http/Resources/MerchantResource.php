@@ -25,6 +25,7 @@ class MerchantResource extends JsonResource
             'role' =>  $this->role,
             'shop_id' =>  $this->shop->shop_id,
             'avatar' =>  $this->avatar,
+            'phone_verified' => $this->phone_verified_at !== null,
         ];
     }
 }

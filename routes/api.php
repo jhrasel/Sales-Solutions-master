@@ -56,7 +56,6 @@ Route::prefix('v1/customer')->name('customer.')->group(function () {
 
 
 //merchant api
-
 Route::group(['prefix' => 'v1'], function () {
     Route::post('/login', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'merchant_login'])->name('merchant.login');
     Route::post('/signup', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'register']);
@@ -66,7 +65,6 @@ Route::group(['prefix' => 'v1'], function () {
     Route::get('/page/{page}', [\App\Http\Controllers\API\V1\PageController::class, 'show']);
     Route::get('/device/{ip}/check/{browser}', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'checkIp']);
 });
-
 
 Route::group(['prefix' => 'v1/client'], function () {
     Route::post('forget-password', [ForgetPasswordController::class, 'forgetPassword']);
