@@ -136,12 +136,14 @@ class LoginController extends MerchantBaseController
     public function merchant_logout(Request $request)
     {
         try {
-            $token = Str::replace('Bearer ', '', $request->header('authorization'));
-            $merchant = MerchantToken::query()->where('user_id', $request->header('id'))
-                ->where('token', $token)
+            $merchants = MerchantToken::query()->where('user_id', $request->header('id'))
                 ->where('ip', $request->header('ipaddress'))
                 ->where('browser', $request->header('browsername'))
-                ->delete();
+                ->get();
+
+            foreach ($merchants as $merchant) {
+                $merchant->delete();
+            }
             return $this->sendApiResponse('', 'Successfully Logout!');
 
         } catch (\Exception $e) {
