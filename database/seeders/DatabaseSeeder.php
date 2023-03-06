@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use App\Models\CustomerInfo;
 use App\Models\MerchantInfo;
 use App\Models\Role;
 use App\Models\Shop;
 use App\Models\User;
-use Database\Factories\CategoryFactory;
 use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
 use Illuminate\Support\Str;
@@ -55,7 +55,7 @@ class DatabaseSeeder extends Seeder
 
 
 
-//        User::factory(200)->staff()->create();
+//        User::factory(10)->staff()->create();
 
 
         $roles = [
@@ -89,5 +89,6 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->call(CategoryTableSeeder::class);
+        $this->call(ProductTableSeeder::class);
     }
 }

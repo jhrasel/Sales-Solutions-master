@@ -1,17 +1,15 @@
-<?php /** @noinspection PhpPossiblePolymorphicInvocationInspection */
-
-/** @noinspection PhpUndefinedFieldInspection */
+<?php
 
 namespace App\Http\Controllers\API\V1\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderRequest;
+use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\Product;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
+
 
 class OrderController extends Controller
 {
@@ -21,9 +19,10 @@ class OrderController extends Controller
             $order = Order::query()->create([
                 'order_no' => rand(100, 9999),
                 'shop_id' => $request->header('shop-id'),
-                'customer_name' => $request->input('customer_name'),
+                'address' => $request->input('customer_address'),
                 'phone' => $request->input('customer_phone'),
-                'address' => $request->input('customer_address')
+                'customer_name' => $request->input('customer_name'),
+                'delivery_location' => $request->input('delivery_location'),
             ]);
 
             $grand_total = 0;
@@ -46,11 +45,18 @@ class OrderController extends Controller
                 }
 
             }
-            $order->shipping_cost = $shipping_cost;
-            $order->grand_total = $grand_total;
-            $order->save();
+            $order->pricing()->create([
+                'shipping_cost' => $shipping_cost,
+                'grand_total' => $grand_total
+            ]);
 
-            $order->load('customer', 'order_details');
+            $order->config()->create();
+            $order->courier()->create();
+            $order->note()->create([
+                'type'
+            ])
+
+            $order->load('order_details');
             foreach ($order->order_details as $details) {
                 $details->product->update([
                     'product_qty' => $details->product->product_qty - $details->product_qty
@@ -64,8 +70,8 @@ class OrderController extends Controller
 
     public function show($id): JsonResponse
     {
-        $order = Order::query()->with('order_details', 'customer')->find($id);
+        $order = Order::query()->with('order_details', 'pricing')->find($id);
 
-        return $this->sendApiResponse($order);
+        return $this->sendApiResponse(new OrderResource($order));
     }
 }

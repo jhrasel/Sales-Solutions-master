@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddShippingCostToOrdersTable extends Migration
+class CreateOrderPricingsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,14 @@ class AddShippingCostToOrdersTable extends Migration
      */
     public function up()
     {
-        Schema::table('orders', function (Blueprint $table) {
+        Schema::create('order_pricings', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('order_id');
+            $table->integer('advanced')->default(0);
+            $table->integer('due')->default(0);
+            $table->integer('grand_total')->default(0);
             $table->integer('shipping_cost')->default(0);
+            $table->timestamps();
         });
     }
 
@@ -25,8 +31,6 @@ class AddShippingCostToOrdersTable extends Migration
      */
     public function down()
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumn('shipping_cost');
-        });
+        Schema::dropIfExists('order_pricings');
     }
 }

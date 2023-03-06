@@ -21,8 +21,8 @@ class CreateProductsTable extends Migration
             $table->string('product_code');
             $table->integer('product_qty');
             $table->string('slug');
-            $table->float('price',8,2);
-            $table->float('discount',8,2);
+            $table->float('price',8,2)->default(0);
+            $table->float('discount',8,2)->default(0);
             $table->text('short_description')->nullable();
             $table->boolean('status')->default(true);
             $table->timestamps();

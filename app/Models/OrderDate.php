@@ -5,8 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class OrderNote extends Model
+class OrderDate extends Model
 {
     use HasFactory;
-    protected $guarded = [];
 }

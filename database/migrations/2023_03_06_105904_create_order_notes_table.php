@@ -15,7 +15,7 @@ class CreateOrderNotesTable extends Migration
     {
         Schema::create('order_notes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->constrained()->onDelete('cascade')->onUpdate('cascade');
+            $table->foreignId('order_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->string('type');
             $table->string('note');
             $table->timestamps();

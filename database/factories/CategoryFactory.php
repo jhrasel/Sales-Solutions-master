@@ -4,8 +4,6 @@ namespace Database\Factories;
 
 use App\Models\Shop;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
-
 
 class CategoryFactory extends Factory
 {
@@ -18,10 +16,10 @@ class CategoryFactory extends Factory
     {
         $shop = Shop::query()->pluck('shop_id');
         return [
-            'name' => $this->faker->unique()->name(),
-            'slug' => Str::slug($this->faker->name),
             'shop_id' => $this->faker->randomElement($shop),
-            'status' => 1
+            'name' => $this->faker->unique()->name,
+            'slug' => $this->faker->name,
+            'status' => true,
         ];
     }
 }

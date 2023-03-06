@@ -13,19 +13,25 @@ class ProductFactory extends Factory
      * Define the model's default state.
      *
      * @return array
-     * @throws \Exception
      */
     public function definition()
     {
         $shop = Shop::query()->pluck('shop_id');
-        $category = Category::query()->pluck('id');
+        $category = Category::query()->where('shop_id', $this->faker->randomElement($shop))->pluck('id');
+        $deliver_charge = $this->faker->randomElement(['paid', 'free']);
+        $inside_dhaka = $deliver_charge === 'free' ? 0 : 60;
+        $outside_dhaka = $deliver_charge === 'paid' ? 150 : 0;
         return [
-            'category_id' => $this->faker->randomElement($category),
-            'product_name' => $this->faker->unique()->name(),
-            'slug' => Str::slug($this->faker->name),
-            'price' => random_int(100, 10000),
-            'product_code' => mt_rand(10000, 99999),
             'shop_id' => $this->faker->randomElement($shop),
+            'category_id' => $this->faker->randomElement($category),
+            'product_name' => $this->faker->unique()->name,
+            'slug' => Str::slug($this->faker->unique()->name),
+            'product_code' => mt_rand(11111, 99999),
+            'product_qty' => $this->faker->randomDigitNotZero(),
+            'price' => $this->faker->numberBetween(1000, 10000),
+            'delivery_charge' => $deliver_charge,
+            'inside_dhaka' => $inside_dhaka,
+            'outside_dhaka' => $outside_dhaka,
         ];
     }
 }
