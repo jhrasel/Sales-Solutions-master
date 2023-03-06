@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AlterTableOrdersChangeUserId extends Migration
+class CreateCourierStatusesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,11 @@ class AlterTableOrdersChangeUserId extends Migration
      */
     public function up()
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->unsignedBigInteger('customer_id')->nullable()->change();
+        Schema::create('courier_statuses', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('order_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->string('status');
+            $table->timestamps();
         });
     }
 
@@ -25,8 +28,6 @@ class AlterTableOrdersChangeUserId extends Migration
      */
     public function down()
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumn('customer_id');
-        });
+        Schema::dropIfExists('courier_statuses');
     }
 }
