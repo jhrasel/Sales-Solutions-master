@@ -62,6 +62,7 @@ Route::group(['prefix' => 'v1'], function () {
     Route::post('/auth/verify', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'verify']);
     Route::post('/resend/otp', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'resendOTP']);
     Route::post('/shops/info', [\App\Http\Controllers\API\V1\Client\Shop\ShopController::class, 'index']);
+    Route::post('/shops/domain', [\App\Http\Controllers\API\V1\Client\Shop\ShopController::class, 'domain']);
     Route::get('/page/{page}', [\App\Http\Controllers\API\V1\PageController::class, 'show']);
     Route::get('/device/{ip}/check/{browser}', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'checkIp']);
 });
