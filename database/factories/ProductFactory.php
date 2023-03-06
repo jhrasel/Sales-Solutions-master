@@ -14,10 +14,10 @@ class ProductFactory extends Factory
      *
      * @return array
      */
-    public function definition()
+    public function definition(): array
     {
         $shop = Shop::query()->pluck('shop_id');
-        $category = Category::query()->where('shop_id', $this->faker->randomElement($shop))->pluck('id');
+        $category = Category::query()->pluck('id');
         $deliver_charge = $this->faker->randomElement(['paid', 'free']);
         $inside_dhaka = $deliver_charge === 'free' ? 0 : 60;
         $outside_dhaka = $deliver_charge === 'paid' ? 150 : 0;

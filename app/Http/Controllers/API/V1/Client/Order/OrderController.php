@@ -4,6 +4,8 @@ namespace App\Http\Controllers\API\V1\Client\Order;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderRequest;
+use App\Http\Resources\MerchantOrderResource;
+use App\Models\OrderNote;
 use App\Models\Shop;
 use App\Models\Product;
 use App\Services\Sms;
@@ -25,7 +27,7 @@ class OrderController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $orders = Order::with('order_details')
+        $orders = Order::with('order_details', 'pricing')
             ->where('shop_id', $request->header('shop-id'))
             ->orderByDesc('id')
             ->get();
@@ -33,7 +35,7 @@ class OrderController extends Controller
         if (!$orders) {
             return $this->sendApiResponse('', 'Orders not found', 'NotFound');
         }
-        return $this->sendApiResponse($orders);
+        return $this->sendApiResponse(MerchantOrderResource::collection($orders));
 
     }
 
@@ -64,6 +66,7 @@ class OrderController extends Controller
     public function store(OrderRequest $request): JsonResponse
     {
         return DB::transaction(function() use ($request) {
+
             $order = Order::query()->create([
                 'order_no' => rand(100, 9999),
                 'shop_id' => $request->header('shop-id'),
@@ -73,8 +76,10 @@ class OrderController extends Controller
                 'delivery_location' => $request->input('delivery_location'),
             ]);
 
+
             $grand_total = 0;
             $shipping_cost = 0;
+
             //store order details
             foreach ($request->input('product_id') as $key => $item) {
 
@@ -87,7 +92,6 @@ class OrderController extends Controller
                 ]);
 
                 $grand_total += $product->price * $request->input('product_qty')[$key];
-
                 if ($product->delivery_charge === Product::PAID) {
                     $shipping_cost += $product[$request->input('delivery_location')];
                 }
@@ -97,10 +101,20 @@ class OrderController extends Controller
                 'shipping_cost' => $shipping_cost,
                 'grand_total' => $grand_total
             ]);
+
+            if ($request->filled('note')) {
+
+                $note = OrderNote::query()->create([
+                    'order_id' => $order->id,
+                    'type' => Order::PENDING,
+                    'note' => $request->input('note')
+                ]);
+            }
+
             $order->config()->create();
             $order->courier()->create();
 
-            $order->load('order_details');
+            $order->load('order_details', 'pricing');
             foreach ($order->order_details as $details) {
                 $details->product->update([
                     'product_qty' => $details->product->product_qty - $details->product_qty

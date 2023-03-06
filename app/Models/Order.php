@@ -7,18 +7,28 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property int $id
+ */
+
 class Order extends Model
 {
     use HasFactory;
-
-    const PENDING = 'pending';
-    const FOLLOWUP = 'follow_up';
-    const CANCELLED = 'cancelled';
-    const CONFIRMED = 'confirmed';
-    const RETURNED = 'returned';
-    const DELIVERED = 'delivered';
-
     protected $guarded = [];
+
+    public const PENDING = 'pending';
+    public const FOLLOWUP = 'follow_up';
+    public const CANCELLED = 'cancelled';
+    public const CONFIRMED = 'confirmed';
+    public const RETURNED = 'returned';
+    public const DELIVERED = 'delivered';
+
+
+
+    public function getOrderStatusAttribute($value)
+    {
+        return $value;
+    }
 
     public function order_details(): HasMany
     {
@@ -40,8 +50,4 @@ class Order extends Model
         return $this->hasOne(OrderConfig::class);
     }
 
-    public function note(): HasMany
-    {
-        return $this->hasMany(OrderNote::class);
-    }
 }

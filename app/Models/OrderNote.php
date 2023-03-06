@@ -9,4 +9,5 @@ class OrderNote extends Model
 {
     use HasFactory;
     protected $guarded = [];
+
 }
