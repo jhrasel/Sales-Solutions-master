@@ -7,6 +7,7 @@ use App\Models\MerchantInfo;
 use App\Models\Role;
 use App\Models\Shop;
 use App\Models\User;
+use Database\Factories\CategoryFactory;
 use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
 use Illuminate\Support\Str;
@@ -54,7 +55,7 @@ class DatabaseSeeder extends Seeder
 
 
 
-        User::factory(200)->staff()->create();
+//        User::factory(200)->staff()->create();
 
 
         $roles = [
@@ -86,5 +87,7 @@ class DatabaseSeeder extends Seeder
                 'slug' => $role['slug'],
             ]);
         }
+
+        $this->call(CategoryTableSeeder::class);
     }
 }

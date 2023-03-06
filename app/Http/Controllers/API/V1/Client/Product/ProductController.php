@@ -59,7 +59,6 @@ class ProductController extends Controller
                 $category = new Category;
                 $category->name = $request->input('category_name');
                 $category->slug = Str::slug($request->input('category_name'));
-                $category->user_id = $request->header('id');
                 $category->shop_id = $request->header('shop-id');
                 $category->status = 1;
                 $category->save();
@@ -70,7 +69,6 @@ class ProductController extends Controller
                 $category_id = $request->input('category_id');
             }
             $product->category_id = $category_id;
-            $product->user_id = $request->header('id');
             $product->shop_id = $request->header('shop-id');
             $product->product_name = $request->input('product_name');
             $product->slug = Str::slug($request->input('product_name')).'-'.Str::random('5');
