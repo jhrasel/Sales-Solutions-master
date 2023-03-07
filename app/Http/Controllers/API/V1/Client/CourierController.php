@@ -4,6 +4,9 @@ namespace App\Http\Controllers\API\V1\Client;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CourierProviderRequest;
+use App\Http\Resources\CourierOrderResource;
+use App\Http\Resources\MerchantOrderResource;
+use App\Models\CourierStatus;
 use App\Models\MerchantCourier;
 use App\Models\Order;
 use App\Services\Courier;
@@ -69,18 +72,21 @@ class CourierController extends Controller
         }
         $credentials = collect(json_decode($courier->config))->toArray();
 
-        $data = Order::query()->with('customer')->find($request->input('order_id'));
+        $data = Order::query()->with('order_details', 'pricing', 'courier', 'config')->where('id', $request->input('order_id'))->first();
+
         if ($data && $request->input('provider') == MerchantCourier::STEADFAST) {
             $provider = new Courier;
             $response = $provider->createOrder($credentials, $data)->json();
 
             if($response['status'] === 200) {
-                $data->consignment_id = $response['consignment']['consignment_id'];
-                $data->tracking_code = $response['consignment']['tracking_code'];
-                $data->courier_entry = true;
-                $data->courier_status = $response['consignment']['status'];
-                $data->save();
-                return $this->sendApiResponse($data, 'Order has been send to '. MerchantCourier::STEADFAST);
+                $data->courier->update([
+                    'tracking_code' => $response['consignment']['tracking_code'],
+                    'status' => $response['consignment']['status']
+                ]);
+                $data->config->update([
+                    'courier_entry' => true
+                ]);
+                return $this->sendApiResponse(new MerchantOrderResource($data), 'Order has been send to '. MerchantCourier::STEADFAST);
             } else {
                 return $this->sendApiResponse('', $response['errors']['invoice'][0], 'AlreadyTaken');
             }
@@ -90,9 +96,9 @@ class CourierController extends Controller
 
     }
 
-    public function trackOrder(Request $request, $id)
+    public function trackOrder(Request $request, $id): JsonResponse
     {
-        $order = Order::query()->find($id);
+        $order = Order::query()->with('courier', 'order_details', 'pricing', 'config')->find($id);
         $courier = new Courier;
         $merchant_courier = MerchantCourier::query()
             ->where('shop_id', $request->header('shop-id'))
@@ -103,22 +109,28 @@ class CourierController extends Controller
         if($merchant_courier->provider === MerchantCourier::STEADFAST) {
 
             $credentials = collect(json_decode($merchant_courier->config))->toArray();
-
-            if ($request->filled('consignment_id')) {
-                $response = $courier->trackOrder($credentials, '/status_by_cid/' . $request->input('consignment_id'));
-            }
-            if ($request->filled('invoice')) {
-                $response = $courier->trackOrder($credentials, '/status_by_invoice/' . $request->input('invoice'));
-            }
             if ($request->filled('tracking_code')) {
                 $response = $courier->trackOrder($credentials, '/status_by_trackingcode/' . $request->input('tracking_code'));
+                $status = json_decode($response->body());
+
+
+                if($order->courier->status !== $status->delivery_status) {
+                    $order->courier->update([
+                        'status' => $status->delivery_status
+                    ]);
+
+                    CourierStatus::query()->create([
+                        'order_id' => $order->id,
+                        'status' => $status->delivery_status,
+                    ]);
+
+                    return $this->sendApiResponse(new MerchantOrderResource($order), 'Courier data Updated');
+                }
+                $status->delivery_status = Courier::status($status->delivery_status);
+                return $this->sendApiResponse($status);
             }
 
-            $status = $response->body();
-
-
         }
-
 
         return $this->sendApiResponse('', 'Courier data not found', 'NotFound');
 

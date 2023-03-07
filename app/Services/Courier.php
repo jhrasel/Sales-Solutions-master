@@ -2,8 +2,6 @@
 
 namespace App\Services;
 
-
-use http\Message\Body;
 use Illuminate\Support\Facades\Http;
 
 class Courier
@@ -22,6 +20,16 @@ class Courier
         'unknown' => 'Unknown'
     ];
 
+    public static function status($value): ?string
+    {
+        foreach (self::statuses as $key => $item) {
+            if($key === $value) {
+                return $item;
+            }
+        }
+        return null;
+    }
+
     public function request($credentials): \Illuminate\Http\Client\PendingRequest
     {
         return Http::baseUrl('https://portal.steadfast.com.bd/api/v1/')
@@ -34,10 +42,10 @@ class Courier
     {
         $array = [
             'invoice' => $data['order_no'],
-            'recipient_name' => $data->customer['name'],
-            'recipient_phone' => $data->customer['phone'],
-            'recipient_address' => $data->customer['address'] ?: 'not found',
-            'cod_amount' => $data['cod'],
+            'recipient_name' => $data['customer_name'],
+            'recipient_phone' => $data['phone'],
+            'recipient_address' => $data['address'] ?: 'not found',
+            'cod_amount' => $data->pricing['due'],
             'note' => $data['note']
         ];
         return $this->request($credentials)->post('create_order', $array);

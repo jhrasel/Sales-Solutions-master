@@ -12,9 +12,9 @@ use JsonSerializable;
 
 /**
  * @property Order $resource
+ * @package App\Http\Resources
  */
-
-class OrderResource extends JsonResource
+class CourierOrderResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -24,9 +24,6 @@ class OrderResource extends JsonResource
      */
     public function toArray($request)
     {
-        $status = $this->order_status ?? Order::PENDING;
-        $note = OrderNote::query()->where('order_id', $this->id)->where('type', $status)->first();
-
         return [
             'id' => $this->resource->id,
             'order_no' => (int)$this->resource->order_no,
@@ -35,14 +32,11 @@ class OrderResource extends JsonResource
             'phone' => $this->resource->phone,
             'address' => $this->resource->address,
             'order_status' => $this->resource->order_status,
-            'cod' => $this->resource->cod == 1,
+            'cod' => $this->resource->cod === 1,
             'grand_total' => $this->resource->pricing->grand_total,
             'advanced' => $this->resource->pricing->advanced,
-            'due' => $this->resource->pricing->due,
+            'due' => (int)$this->resource->pricing->due,
             'shipping_cost' => $this->resource->pricing->shipping_cost,
-            'delivery_location' => Str::ucfirst(Str::replace('_', ' ', $this->resource->delivery_location)),
-            'note' => $note->note ?? null,
-            'order_details' => OrderDetailsResource::collection($this->resource->order_details),
         ];
     }
 }

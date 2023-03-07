@@ -5,12 +5,12 @@ namespace App\Http\Controllers\API\V1\Client\Order;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderRequest;
 use App\Http\Resources\MerchantOrderResource;
+use App\Models\OrderDate;
 use App\Models\OrderNote;
 use App\Models\Shop;
 use App\Models\Product;
 use App\Services\Sms;
 use App\Models\Order;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -57,7 +57,7 @@ class OrderController extends Controller
      *
      * @return Response
      */
-    public function create()
+    public function create(): Response
     {
         //
     }
@@ -75,7 +75,6 @@ class OrderController extends Controller
                 'customer_name' => $request->input('customer_name'),
                 'delivery_location' => $request->input('delivery_location'),
             ]);
-
 
             $grand_total = 0;
             $shipping_cost = 0;
@@ -113,8 +112,8 @@ class OrderController extends Controller
 
             $order->config()->create();
             $order->courier()->create();
-
             $order->load('order_details', 'pricing');
+
             foreach ($order->order_details as $details) {
                 $details->product->update([
                     'product_qty' => $details->product->product_qty - $details->product_qty
@@ -132,7 +131,7 @@ class OrderController extends Controller
                 $sms->sendSms($request->input('customer_phone'), $order->order_no, $shop->name);
             }
 
-            return $this->sendApiResponse($order, 'Order Created Successfully');
+            return $this->sendApiResponse(new MerchantOrderResource($order), 'Order Created Successfully');
         });
     }
 
@@ -144,18 +143,15 @@ class OrderController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $order = Order::with(['order_details'])->where('id', $id)->where('shop_id', request()->header('shop-id'))->first();
+        $order = Order::query()->with('order_details', 'pricing')
+            ->where('id', $id)
+            ->where('shop_id', request()->header('shop-id'))
+            ->first();
         if (!$order) {
             return $this->sendApiResponse('', 'Order not found');
         }
 
-        $customer = User::query()->where('id', $order->customer_id)->where('role', 'customer')->first();
-        if (!$customer) {
-            return $this->sendApiResponse('', 'Customer not found');
-        }
-
-        $order['customer'] = $customer;
-        return $this->sendApiResponse($order);
+        return $this->sendApiResponse(new MerchantOrderResource($order));
 
     }
 
@@ -193,7 +189,11 @@ class OrderController extends Controller
         //
     }
 
-
+    /**
+     * @property string $order_status
+     * @param OrderRequest $request
+     * @return JsonResponse
+     */
     public function order_status_update(OrderRequest $request): JsonResponse
     {
         $order = Order::query()->with('order_details')
@@ -204,15 +204,20 @@ class OrderController extends Controller
             return $this->sendApiResponse('', 'Order Not Found', 'NotFound');
         }
 
-        $order->order_status = $request->input('status');
-        if ($request->input('status') == 'returned') {
-            $order->return_order_date = $request->input('return_order_date');
-            $order->return_order_note = $request->input('return_order_note');
-            foreach ($order->order_details as $details) {
-                $details->product->update([
-                    'product_qty' => $details->product->product_qty + $details->product_qty
-                ]);
-            }
+        if($request->input('status') === Order::CONFIRMED) {
+            $order->order_status = $request->input('status');
+        }
+        if($request->input('status') === Order::FOLLOWUP) {
+            $order->order_status = $request->input('status');
+        }
+        if($request->input('status') === Order::CANCELLED) {
+            $order->order_status = $request->input('status');
+        }
+        if($request->input('status') === Order::RETURNED) {
+            $order->order_status = $request->input('status');
+        }
+        if($request->input('status') === Order::DELIVERED) {
+            $order->order_status = $request->input('status');
         }
         $order->save();
 
@@ -227,13 +232,13 @@ class OrderController extends Controller
             $message = 'Dear ' . $order->customer_name . ' , Your Order No. ' . $order->order_no . ' is ' . $order->order_status . '.Thank you.' . $shop->name . '';
             $sms->sendSms($request->input('customer_phone'), $order->order_no, $shop->name, $message);
         }
-        return $this->sendApiResponse($order, 'Order Status Update Successfully');
+        return $this->sendApiResponse(new MerchantOrderResource($order), 'Order Status Update to Successfully');
 
     }
 
     public function order_invoice(Request $request): JsonResponse
     {
-        $order = Order::with(['order_details', 'customer'])
+        $order = Order::query()->with('order_details')
             ->where('id', $request->header('order-id'))
             ->where('shop_id', $request->header('shop-id'))
             ->first();
@@ -242,7 +247,7 @@ class OrderController extends Controller
             return $this->sendApiResponse('', 'Order Not found', 'NotFound');
         }
 
-        return $this->sendApiResponse($order);
+        return $this->sendApiResponse(new MerchantOrderResource($order));
     }
 
     public function updateFollowup(Request $request, $id): JsonResponse
@@ -259,10 +264,67 @@ class OrderController extends Controller
 
     public function advancePayment(Request $request, $id): JsonResponse
     {
-        $order = Order::query()->find($id);
-        $order->update([
-            'advance' => $request->input('advance')
+        $order = Order::query()->with('order_details', 'pricing')->find($id);
+        $order->pricing->update([
+            'due' => abs($order->pricing->grand_total - $request->input('advanced')),
+           'advanced' => $request->input('advanced')
         ]);
-        return $this->sendApiResponse($order, 'Advance payment updated');
+        return $this->sendApiResponse(new MerchantOrderResource($order), 'Advance payment updated');
+    }
+
+    public function noteUpdateByStatus(Request $request, $id): JsonResponse
+    {
+        $type = $this->checkStatusValidity($request->input('type'));
+        if($type === false) {
+            return $this->sendApiResponse('', 'Please add valid Status type');
+        }
+        $note = OrderNote::query()->updateOrCreate([
+            'order_id' => $id,
+            'type' => $type
+        ], [
+            'note' => $request->input('note'),
+        ]);
+
+        return $this->sendApiResponse($note, 'Note updated for '.$request->input('type'). ' order');
+    }
+
+    public function dateUpdateByStatus(Request $request, $id): JsonResponse
+    {
+        $type = $this->checkStatusValidity($request->input('type'));
+        if($type === false) {
+            return $this->sendApiResponse('', 'Please add valid Status type');
+        }
+        $note = OrderDate::query()->updateOrCreate([
+            'order_id' => $id,
+            'type' => $type
+        ], [
+            'date' => $request->input('date'),
+        ]);
+
+        return $this->sendApiResponse($note, 'Date updated for '.$type. ' order');
+    }
+
+    /**
+     * @param $value
+     * @return string
+     */
+    public function checkStatusValidity($value): string
+    {
+        if($value === Order::CONFIRMED) {
+            return Order::CONFIRMED;
+        }
+        if($value === Order::FOLLOWUP) {
+            return Order::FOLLOWUP;
+        }
+        if($value === Order::CANCELLED) {
+            return Order::CANCELLED;
+        }
+        if($$value === Order::RETURNED) {
+            return $value;
+        }
+        if($value === Order::DELIVERED) {
+            return Order::DELIVERED;
+        }
+        return false;
     }
 }

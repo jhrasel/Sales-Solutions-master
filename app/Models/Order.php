@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
+ * @property string $order_status
  */
 
 class Order extends Model
@@ -22,13 +23,6 @@ class Order extends Model
     public const CONFIRMED = 'confirmed';
     public const RETURNED = 'returned';
     public const DELIVERED = 'delivered';
-
-
-
-    public function getOrderStatusAttribute($value)
-    {
-        return $value;
-    }
 
     public function order_details(): HasMany
     {

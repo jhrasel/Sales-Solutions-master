@@ -25,6 +25,7 @@ class OrderController extends Controller
                 'phone' => $request->input('customer_phone'),
                 'customer_name' => $request->input('customer_name'),
                 'delivery_location' => $request->input('delivery_location'),
+                'cod' => $request->input('cod')
             ]);
 
 
@@ -50,7 +51,8 @@ class OrderController extends Controller
             }
             $order->pricing()->create([
                 'shipping_cost' => $shipping_cost,
-                'grand_total' => $grand_total
+                'grand_total' => $grand_total,
+                'due' => $grand_total
             ]);
 
             if ($request->filled('note')) {

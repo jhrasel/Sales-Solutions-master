@@ -34,25 +34,7 @@ class UpdateOrderCourierStatus implements ShouldQueue
      */
     public function handle()
     {
-        $orders = Order::query()->where('courier_entry', true)
-            ->where('order_status', '!=', 'pending')
-            ->orWhere('order_status', '!=', 'cancelled')
-            ->orWhere('order_status', '!=', 'delivered')
-            ->orWhere('consignment_id', '!=', null)
-            ->orWhere('tracking_code', '!=', null)
-            ->get();
 
-
-        if($orders->isNotEmpty()) {
-            foreach ($orders as $order) {
-                $check_courier_status = MerchantCourier::query()->where('provider', MerchantCourier::STEADFAST)
-                    ->where('shop_id', $order->shop_id)
-                    ->first();
-
-                Log::info($check_courier_status);
-
-            }
-        }
 
     }
 }

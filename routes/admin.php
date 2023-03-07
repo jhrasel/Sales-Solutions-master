@@ -58,7 +58,4 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'panel'], function () {
 
     Route::get('download/{id}/attachment/',[SupportTicketController::class, 'download']);
 
-    Route::get('check-jobs', function () {
-        UpdateOrderCourierStatus::dispatch();
-    });
 });
