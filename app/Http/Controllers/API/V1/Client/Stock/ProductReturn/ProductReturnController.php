@@ -5,13 +5,12 @@ namespace App\Http\Controllers\API\V1\Client\Stock\ProductReturn;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderRequest;
 use App\Models\Order;
-use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
 
 class ProductReturnController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
 

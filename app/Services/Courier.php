@@ -55,4 +55,9 @@ class Courier
     {
         return $this->request($credentials)->get($url);
     }
+
+    public function checkBalance($credentials, $url)
+    {
+        return $this->request($credentials)->get($url);
+    }
 }

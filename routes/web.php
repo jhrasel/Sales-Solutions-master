@@ -20,3 +20,4 @@ Route::get('/signup', [\App\Http\Controllers\Merchant\Auth\LoginController::clas
 Route::post('/signup/store', [\App\Http\Controllers\Merchant\Auth\LoginController::class, 'register'])->name('merchant.register.store');
 Route::get('/thank_you', [\App\Http\Controllers\General\HomeController::class, 'thankYou'])->name('thank_you');
 Route::get('/check-order-courier-status', [\App\Http\Controllers\Admin\CourierController::class, 'checkOrderCourierStatus']);
+Route::get('/check-balance', [\App\Http\Controllers\Admin\CourierController::class, 'checkCourierBalance']);

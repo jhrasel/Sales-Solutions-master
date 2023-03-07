@@ -3,14 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminBaseController;
-use App\Http\Controllers\Controller;
-use App\Http\Resources\MerchantOrderResource;
 use App\Models\CourierStatus;
 use App\Models\MerchantCourier;
 use App\Models\Order;
+use App\Models\Shop;
 use App\Services\Courier;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+
 
 class CourierController extends AdminBaseController
 {
@@ -52,5 +50,28 @@ class CourierController extends AdminBaseController
         }
 
         return false;
+    }
+
+    public function checkCourierBalance(): bool
+    {
+        $courier_merchants = MerchantCourier::query()->where('provider', MerchantCourier::STEADFAST)
+            ->where('config', '!=', null)
+            ->where('status', 'active')
+            ->get();
+
+        foreach ($courier_merchants as $merchant) {
+            $courier = new Courier;
+            $credentials = collect(json_decode($merchant->config))->toArray();
+            $response = $courier->checkBalance($credentials, '/get_balance');
+            $status = json_decode($response->body());
+
+            if($status->status === 200) {
+                $shop = Shop::query()->where('shop_id', $merchant->shop_id)->first();
+                $shop->update([
+                    'courier_balance' => $status->current_balance
+                ]);
+            }
+        }
+        return true;
     }
 }
