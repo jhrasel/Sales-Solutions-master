@@ -30,6 +30,7 @@ class CourierController extends AdminBaseController
                 $check_courier_status = MerchantCourier::query()->where('provider', MerchantCourier::STEADFAST)
                     ->where('shop_id', $order->shop_id)
                     ->where('config', '!=', null)
+                    ->where('status', 'active')
                     ->first();
                 $courier = new Courier;
                 $credentials = collect(json_decode($check_courier_status->config))->toArray();
