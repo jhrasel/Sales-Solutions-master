@@ -86,8 +86,8 @@ class LoginController extends MerchantBaseController
             $merchant->merchantinfo()->create();
             $sms = new Sms();
             $sms->sendVerifyOtp($merchant);
-
-            return $this->sendApiResponse($merchant, 'Account created Successfully, Verify phone to Use our service');
+            $merchant->load('shop');
+            return $this->sendApiResponse(new MerchantResource($merchant), 'Account created Successfully, Verify phone to Use our service');
         } catch (\Exception $exception) {
             return $exception->getMessage();
         }
