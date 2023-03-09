@@ -19,5 +19,5 @@ jobs:
           server: web.funnelliner.com
           username: funnel_liner
           password: Aq$kePH9zZ
-          protocol: ftp
+          protocol: ftps
           port: 22 # todo replace with your web hosts ftps port
