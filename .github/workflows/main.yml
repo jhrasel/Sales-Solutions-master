@@ -19,5 +19,5 @@ jobs:
           server: ftp.dev.funnelliner.com
           username: main@dev.funnelliner.com
           password: 6=wVdoNSKdUF
-          protocol: ftp
+          protocol: ftps
           port: 22 # todo replace with your web hosts ftps port
