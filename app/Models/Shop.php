@@ -15,7 +15,10 @@ class Shop extends Model
     {
         return $this->belongsTo(Media::class,'id','parent_id')->where('type','shop_logo');
     }
-
+    public function shop_favicon(): BelongsTo
+    {
+        return $this->belongsTo(Media::class,'id','parent_id')->where('type','shop_favicon');
+    }
     public function merchant(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
