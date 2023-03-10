@@ -50,7 +50,21 @@ class SettingController extends MerchantBaseController
             $shop->shop_meta_title = $request->input('shop_meta_title');
             $shop->shop_meta_description = $request->input('shop_meta_description');
             $shop->save();
+            
+            //store shop favicon
+            if ($request->hasFile('shop_favicon')) {
 
+                $mainImageName = time() . '_shop_favicon.' . $request->file('shop_favicon')->getClientOriginalExtension();
+
+                $request->shop_favicon->move(public_path('images'), $mainImageName);
+                $media = new Media();
+                $media->name = '/images/' . $mainImageName;
+                $media->parent_id = $shop->id;
+                $media->type = 'shop_favicon';
+                $media->save();
+
+                $shop['favicon'] = $media->name;
+            }
             //store shop logo
             if ($request->hasFile('shop_logo')) {
 
