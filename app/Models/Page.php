@@ -16,6 +16,7 @@ class Page extends Model
         'user_id' => 'integer',
         'shop_id' => 'integer',
         'theme' => 'integer',
+        'video_link' => 'integer',
         'status' => 'integer',
         'product_id' => 'integer'
     ];
@@ -24,7 +25,10 @@ class Page extends Model
     {
         return $this->hasOne(Theme::class, 'id', 'theme');
     }
-
+    public function page_reviews(): BelongsTo
+    {
+        return $this->belongsTo(Media::class,'id','parent_id')->where('type','page_reviews');
+    }
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
