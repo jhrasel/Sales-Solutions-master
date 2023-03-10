@@ -44,6 +44,8 @@ class SettingController extends MerchantBaseController
             $shop = Shop::query()->where('shop_id', $request->header('shop-id'))->first();
             $shop->name = $request->input('shop_name');
             $shop->address = $request->input('shop_address');
+            $shop->email = $request->input('email');
+            $shop->phone = $request->input('phone');
             $shop->shop_id = $request->header('shop-id');
             $shop->shop_meta_title = $request->input('shop_meta_title');
             $shop->shop_meta_description = $request->input('shop_meta_description');
@@ -66,7 +68,7 @@ class SettingController extends MerchantBaseController
 
             return response()->json([
                 'success' => true,
-                'msg' => 'merchant setting business information update successfully',
+                'msg' => 'Merchant setting business information update successfully',
                 'data' => $shop,
             ], 200);
     }
