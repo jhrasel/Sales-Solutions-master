@@ -20,8 +20,6 @@ class CreateWebsiteSettingsTable extends Migration
             $table->string('custom_domain')->nullable();
             $table->string('shop_name')->nullable();
             $table->string('shop_address')->nullable();
-            $table->string('email')->nullable();
-            $table->string('phone')->nullable();
             $table->string('website_shop_id')->nullable();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('shop_id');
