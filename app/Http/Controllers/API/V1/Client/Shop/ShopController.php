@@ -34,7 +34,8 @@ class ShopController extends MerchantBaseController
                 $shop['theme_id'] = $activeTheme->name;
             }
 
-            $shop->load('shop_logo');
+            $shop->load('shop_logo'); 
+	        $shop->load('shop_favicon');
 
             return $this->sendApiResponse($shop);
         }
@@ -62,7 +63,8 @@ class ShopController extends MerchantBaseController
                 $shop['theme_id'] = $activeTheme->name;
             }
 
-            $shop->load('shop_logo');
+            $shop->load('shop_logo'); 
+	        $shop->load('shop_favicon');
 
             return $this->sendApiResponse($shop);
         }
