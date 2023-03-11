@@ -16,7 +16,7 @@ class Page extends Model
         'user_id' => 'integer',
         'shop_id' => 'integer',
         'theme' => 'integer',
-        'video_link' => 'integer',
+        'video_link' => 'string',
         'status' => 'integer',
         'product_id' => 'integer'
     ];
