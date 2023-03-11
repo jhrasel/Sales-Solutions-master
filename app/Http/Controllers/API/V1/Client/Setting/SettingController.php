@@ -46,6 +46,9 @@ class SettingController extends MerchantBaseController
             $shop->address = $request->input('shop_address');
             $shop->email = $request->input('email');
             $shop->phone = $request->input('phone');
+		    $shop->about_us = $request->input('about_us');
+		    $shop->tos = $request->input('tos');
+		    $shop->privacy_policy = $request->input('privacy_policy');
             $shop->shop_id = $request->header('shop-id');
             $shop->shop_meta_title = $request->input('shop_meta_title');
             $shop->shop_meta_description = $request->input('shop_meta_description');
