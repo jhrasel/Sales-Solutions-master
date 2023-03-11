@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PageRequest;
 use App\Models\ActiveTheme;
 use App\Models\Page;
+use App\Models\Media;
 use App\Traits\sendApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
