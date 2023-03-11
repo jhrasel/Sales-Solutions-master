@@ -69,6 +69,7 @@ class PageController extends Controller
             }
         }
         $page->load('product');
+	    $page->load('page_reviews');
 
         if (!$page) {
             return $this->sendApiResponse('', 'Something went wrong', 'UnknownError');
@@ -134,6 +135,7 @@ class PageController extends Controller
             }
         }
         $page->load('product');
+	    $page->load('page_reviews');
 
         return $this->sendApiResponse($page, 'Page updated successfully');
     }
