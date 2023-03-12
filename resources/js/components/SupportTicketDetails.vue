@@ -27,6 +27,8 @@
                                             ticket.status && capitalized(ticket.status)
                                         }}
                                     </li>
+
+                                    <li><span>Shop ID:</span> {{ ticket.shop_id }}</li>
                                 </ul>
 
                             </div>
@@ -229,6 +231,8 @@ export default {
             axios.get(`/panel/support-ticket/details/${this.uuid}`).then(response => {
                 this.ticket = response.data.data
                 this.form.ticket_id = response.data.data.id
+
+                console.log(response.data)
             })
         },
         replyToTickets() {
