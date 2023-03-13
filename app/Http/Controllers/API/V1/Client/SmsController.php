@@ -18,13 +18,13 @@ class SmsController extends Controller
      //send message to single users
     public function single_sms_send(Request $request): JsonResponse
     {
- 	
+
         $request->validate([
             'msg' => 'required',
             'phone' => 'required|min:10'
         ]);
 
-        $shop = Shop::where('shop_id', auth()->user()->shop->shop_id)->first();
+        $shop = Shop::query()->where('shop_id', $request->header('shop-id'))->first();
 
         if ($shop->sms_balance < 1) {
 
@@ -62,13 +62,13 @@ class SmsController extends Controller
 	//send message to multiple users
     public function multiple_sms_send(Request $request): JsonResponse
     {
- 	
+
         $request->validate([
             'msg' => 'required',
             'phone' => 'required|min:10'
         ]);
 
-        $shop = Shop::where('shop_id', auth()->user()->shop->shop_id)->first();
+        $shop = Shop::query()->where('shop_id', $request->header('shop-id'))->first();
 
         if ($shop->sms_balance < 1) {
 
@@ -100,7 +100,6 @@ class SmsController extends Controller
             curl_setopt($ch, CURLOPT_POSTFIELDS, $data2);
             $shop = curl_exec($ch);
         }
-
         return $this->sendApiResponse($shop, 'SMS has been sent Successfully');
     }
-}    
+}
