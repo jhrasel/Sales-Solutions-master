@@ -60,7 +60,6 @@ class CategoryController extends Controller
         $data['slug'] = Str::slug($request->input('name'));
         $data['shop_id'] = $request->header('shop-id');
         $data['parent_id'] = $request->input('parent_id') ?: 0;
-        $data['user_id'] = $request->header('id');
         $category = Category::query()->create($data);
 
         if ($request->hasFile('category_image')) {
@@ -120,7 +119,7 @@ class CategoryController extends Controller
         if (!$category) {
             return $this->sendApiResponse('', 'No category found');
         }
-        $data = $request->except('category_image');
+        $data = $request->except('category_image', 'user_id');
         if ($request->filled('name')) {
             $data['slug'] = Str::slug($request->input('name'));
         }
