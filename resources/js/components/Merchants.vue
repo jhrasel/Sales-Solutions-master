@@ -83,6 +83,7 @@
                     <tbody>
                         <tr>
                             <th>SL</th>
+                            <th>Shop Id</th>
                             <th>Company Name</th>
                             <th>Client Name</th>
                             <th>Client Contact No.</th>
@@ -95,6 +96,7 @@
 
                         <tr v-for="(merchant, key) in merchants.data" :key="merchant.id" v-if="merchants?.data?.length > 0">
                             <td>{{ key + 1 }}</td>
+                            <td>{{ merchant?.shop?.shop_id }}</td>
                             <td class="companyName">{{ merchant?.shop?.name }}</td>
                             <td class="name"><a :href="'/panel/merchants/'+`${merchant.id}`">{{
                                     capitalized(merchant.name)

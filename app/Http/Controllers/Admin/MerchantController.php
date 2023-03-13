@@ -59,8 +59,11 @@ class MerchantController extends AdminBaseController
             ->latest();
 
         if ($request->filled('search')) {
-            $query->where('name', 'LIKE', '%' . $request->input('search') . '%')
-                ->orWhere('phone', 'LIKE', '%' . $request->input('search') . '%');
+                $query->where('name', 'LIKE', '%' . $request->input('search') . '%')
+                    ->orWhere('phone', 'LIKE', '%' . $request->input('search') . '%')
+                    ->orWhereHas('shop', function ($query) use ($request){
+                        return $query->where('shop_id', 'LIKE', '%' . $request->input('search') . '%');
+                    });
         }
         if ($request->filled('status')) {
             $query->where('status', $request->input('status'));

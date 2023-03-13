@@ -19,6 +19,11 @@ class CreateShopsTable extends Migration
             $table->string('domain', 50);
             $table->string('shop_id', 50)->unique();
             $table->text('address')->nullable();
+            $table->string('email')->nullable();
+            $table->string('phone')->nullable();
+            $table->longtext('about_us')->nullable();
+            $table->longtext('privacy_policy')->nullable();
+            $table->longtext('tos')->nullable();
             $table->string('shop_meta_title')->nullable();
             $table->longText('shop_meta_description')->nullable();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');

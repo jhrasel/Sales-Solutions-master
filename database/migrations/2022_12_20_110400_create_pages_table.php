@@ -19,6 +19,7 @@ class CreatePagesTable extends Migration
             $table->unsignedBigInteger('shop_id');
             $table->text('title');
             $table->string('slug')->unique();
+            $table->string('video_link')->nullable();
             $table->longText('page_content')->nullable();
             $table->unsignedBigInteger('theme')->default(1);
             $table->unsignedBigInteger('status')->default(0);

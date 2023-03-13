@@ -86,7 +86,9 @@ class SupportTicketController extends AdminBaseController
 
     public function getTicketDetails($uuid): JsonResponse
     {
-        $support_ticket = SupportTicket::query()->with('comments', 'comments.user', 'staff', 'merchant')->where('uuid', $uuid)->first();
+        $support_ticket = SupportTicket::query()->with('comments', 'comments.user', 'staff', 'merchant')
+            ->where('uuid', $uuid)
+            ->first();
 
         return $this->sendApiResponse($support_ticket);
     }

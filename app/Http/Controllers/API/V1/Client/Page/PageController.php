@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PageRequest;
 use App\Models\ActiveTheme;
 use App\Models\Page;
+use App\Models\Media;
 use App\Traits\sendApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -51,8 +52,24 @@ class PageController extends Controller
         $page->theme = $request->input('theme');
         $page->status = $request->input('status') ?: 1;
         $page->product_id = $request->input('product_id');
+        $page->video_link = $request->input('video_link');
         $page->save();
+        if ($request->hasFile('page_reviews')) {
+
+            foreach ($request->page_reviews as $key => $image) {
+                //store product other image
+                $otherImageName = time() . rand(1000, 9999) . '_page_reviews.' . $image->extension();
+                $image->move(public_path('images'), $otherImageName);
+                $mediaOther = new Media();
+                $mediaOther->name = '/images/' . $otherImageName;
+                $mediaOther->parent_id = $page->id;
+                $mediaOther->type = 'page_reviews';
+                $mediaOther->save();
+                $page['page_reviews_' . $key] = $mediaOther->name;
+            }
+        }
         $page->load('product');
+	    $page->load('page_reviews');
 
         if (!$page) {
             return $this->sendApiResponse('', 'Something went wrong', 'UnknownError');
@@ -101,8 +118,24 @@ class PageController extends Controller
         $page->page_content = $request->input('page_content');
         $page->theme = $request->input('theme');
         $page->product_id = $request->input('product_id') ?: $page->product_id;
+        $page->video_link = $request->input('video_link') ?: $page->video_link;
         $page->save();
+        if ($request->hasFile('page_reviews')) {
+
+            foreach ($request->page_reviews as $key => $image) {
+                //store product other image
+                $otherImageName = time() . rand(1000, 9999) . '_page_reviews.' . $image->extension();
+                $image->move(public_path('images'), $otherImageName);
+                $mediaOther = new Media();
+                $mediaOther->name = '/images/' . $otherImageName;
+                $mediaOther->parent_id = $page->id;
+                $mediaOther->type = 'page_reviews';
+                $mediaOther->save();
+                $page['page_reviews_' . $key] = $mediaOther->name;
+            }
+        }
         $page->load('product');
+	    $page->load('page_reviews');
 
         return $this->sendApiResponse($page, 'Page updated successfully');
     }

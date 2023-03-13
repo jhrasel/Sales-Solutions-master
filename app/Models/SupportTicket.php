@@ -20,6 +20,8 @@ class SupportTicket extends Model
     const SOLVED = 'solved';
     const CLOSED = 'closed';
 
+    public $appends = ['shop_id'];
+
     public static function listStatus(): array
     {
         return [
@@ -34,6 +36,13 @@ class SupportTicket extends Model
     public function getCreatedAtAttribute($value): string
     {
         return Carbon::parse($value)->toFormattedDateString();
+    }
+
+    public function getShopIdAttribute(): string
+    {
+        if ($this->relationLoaded('merchant')) {
+            return Shop::query()->where('user_id', $this['user_id'])->pluck('shop_id')->first();
+        }
     }
 
     public function merchant(): BelongsTo
