@@ -30,18 +30,18 @@ class SalesTargetController extends Controller
         }
 
         $daily = Order::query()->where('order_status', 'confirmed')
-            ->where('created_at', Carbon::today())
+            ->where('updated_at', Carbon::today())
             ->each(function ($query) use (&$amounts){
                 $amounts['daily_total'] += $query->grand_total;
             });
         $monthly = Order::query()->where('order_status', 'confirmed')
-            ->whereMonth('created_at', Carbon::now()->month)
+            ->whereMonth('updated_at', Carbon::now()->month)
             ->each(function ($query) use (&$amounts){
                 $amounts['monthly_total'] += $query->grand_total;
             });
 
         $custom = Order::query()->where('order_status', 'confirmed')
-            ->whereBetween('created_at', [$salesTarget->from_date, $salesTarget->to_date])
+            ->whereBetween('updated_at', [$salesTarget->from_date, $salesTarget->to_date])
             ->each(function ($query) use (&$amounts){
                 $amounts['custom_total'] += $query->grand_total;
             });
