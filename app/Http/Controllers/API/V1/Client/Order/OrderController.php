@@ -310,6 +310,9 @@ class OrderController extends Controller
      */
     public function checkStatusValidity($value): string
     {
+        if($value === Order::PENDING) {
+            return Order::PENDING;
+        }
         if($value === Order::CONFIRMED) {
             return Order::CONFIRMED;
         }
