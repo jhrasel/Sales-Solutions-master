@@ -27,7 +27,6 @@ class OrderResource extends JsonResource
     {
         $status = $this->order_status ?? Order::PENDING;
         $note = OrderNote::query()->where('order_id', $this->resource->id)->where('type', $status)->first();
-        $date = OrderDate::query()->where('order_id', $this->resource->id)->where('type', $status)->first();
 
         return [
             'id' => $this->resource->id,
@@ -46,8 +45,6 @@ class OrderResource extends JsonResource
             'note' => $note->note ?? null,
             'order_details' => OrderDetailsResource::collection($this->resource->order_details),
             'created_at' => $this->resource->created_at,
-            'updated_at' => $this->resource->updated_at,
-            $this->resource->order_status.'_date' => $date->date ?? null,
         ];
     }
 }

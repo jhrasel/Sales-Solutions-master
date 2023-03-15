@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property array $order_details
  * @property string $delivery_location
  * @property object $pricing
+ * @property object $config
+ * @property object $courier
  * @property bool $cod
  */
 

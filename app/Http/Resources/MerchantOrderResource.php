@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Order;
+use App\Models\OrderDate;
 use App\Models\OrderNote;
 use App\Services\Courier;
 use Illuminate\Contracts\Support\Arrayable;
@@ -27,6 +28,8 @@ class MerchantOrderResource extends JsonResource
     {
         $status = $this->order_status ?? Order::PENDING;
         $note = OrderNote::query()->where('order_id', $this->resource->id)->where('type', $status)->first();
+        $date = OrderDate::query()->where('order_id', $this->resource->id)->where('type', $status)->first();
+
         return [
             'id' => $this->resource->id,
             'order_no' => (int)$this->resource->order_no,
@@ -45,6 +48,9 @@ class MerchantOrderResource extends JsonResource
             'courier_entry' => $this->resource->config->courier_entry == true,
             'tracking_code' => $this->resource->courier->tracking_code,
             'courier_status' => Courier::status($this->resource->courier->status),
+            $this->resource->order_status.'_date' => $date->date ?? null,
+            'created_at' => $this->resource->created_at,
+            'updated_at' => $this->resource->updated_at,
             'order_details' => OrderDetailsResource::collection($this->resource->order_details)
         ];
     }
