@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property int $advanced
  * @property int $due
+ * @property int $shipping_cost
  *
  */
 

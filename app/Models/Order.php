@@ -10,6 +10,17 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 /**
  * @property int $id
  * @property string $order_status
+ * @property string $order_no
+ * @property string $shop_id
+ * @property string $customer_name
+ * @property string $phone
+ * @property string $address
+ * @property string $created_at
+ * @property string $updated_at
+ * @property array $order_details
+ * @property string $delivery_location
+ * @property object $pricing
+ * @property bool $cod
  */
 
 class Order extends Model
