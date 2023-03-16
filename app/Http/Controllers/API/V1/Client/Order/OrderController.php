@@ -328,6 +328,9 @@ class OrderController extends Controller
         if($$value === Order::RETURNED) {
             return $value;
         }
+        if($$value === Order::SHIPPED) {
+            return $value;
+        }
         if($value === Order::DELIVERED) {
             return Order::DELIVERED;
         }
