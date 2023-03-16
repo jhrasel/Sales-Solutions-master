@@ -16,7 +16,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
-
 class OrderController extends Controller
 {
     /**
@@ -96,13 +95,14 @@ class OrderController extends Controller
                 }
 
             }
+            $grand_total = $grand_total + $shipping_cost;
             $order->pricing()->create([
                 'shipping_cost' => $shipping_cost,
-                'grand_total' => $grand_total
+                'grand_total' => $grand_total,
+                'due' => $grand_total,
             ]);
 
             if ($request->filled('note')) {
-
                 $note = OrderNote::query()->create([
                     'order_id' => $order->id,
                     'type' => Order::PENDING,
