@@ -128,6 +128,7 @@ Route::prefix('v1/client')->middleware('auth-merchant')->name('client.')->group(
     Route::post('/order/advance-payment/{id}/update', [ClientOrder::class, 'advancePayment'])->name('order.advance_pay');
     Route::post('/order/note/{id}/update', [ClientOrder::class, 'noteUpdateByStatus'])->name('order.note_update');
     Route::post('/order/date/{id}/update', [ClientOrder::class, 'dateUpdateByStatus'])->name('order.date_update');
+    Route::post('/order/discount/{id}/update', [ClientOrder::class, 'updateDiscount'])->name('order.discount');
 
     Route::resource('sliders', ClientSlider::class);
     Route::resource('pages', PageController::class);

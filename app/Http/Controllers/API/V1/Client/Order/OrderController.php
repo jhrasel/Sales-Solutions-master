@@ -7,6 +7,7 @@ use App\Http\Requests\OrderRequest;
 use App\Http\Resources\MerchantOrderResource;
 use App\Models\OrderDate;
 use App\Models\OrderNote;
+use App\Models\OrderPricing;
 use App\Models\Shop;
 use App\Models\Product;
 use App\Services\Sms;
@@ -15,6 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
@@ -305,6 +307,28 @@ class OrderController extends Controller
         ]);
 
         return $this->sendApiResponse($note, 'Date updated for '.$type. ' order');
+    }
+
+    public function updateDiscount(Request $request, $id): JsonResponse
+    {
+        $order_pricing = OrderPricing::query()->where('order_id', $id)->first();
+
+        if(Str::contains('%', $request->input('discount'))) {
+            $discount = Str::replace('%', '', $request->input('discount'));
+            $type = Order::PERCENT;
+            $due = ceil($order_pricing->due - ($order_pricing->due * ($discount / 100)));
+        } else {
+            $type = Order::AMOUNT;
+            $due = ceil($order_pricing->due - $request->input('discount'));
+        }
+
+        $order_pricing->update([
+            'discount' => $request->input('discount'),
+            'discount_type' => $type,
+            'due' => $due,
+        ]);
+
+        return $this->sendApiResponse($order_pricing, 'Discount added successfully');
     }
 
     /**

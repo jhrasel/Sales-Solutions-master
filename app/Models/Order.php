@@ -37,6 +37,8 @@ class Order extends Model
     public const RETURNED = 'returned';
     public const SHIPPED = 'shipped';
     public const DELIVERED = 'delivered';
+    public const AMOUNT = 'amount';
+    public const PERCENT = 'percent';
 
     public function order_details(): HasMany
     {
