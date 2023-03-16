@@ -334,6 +334,14 @@ class OrderController extends Controller
         return $this->sendApiResponse($order_pricing, 'Discount added successfully');
     }
 
+    public function delete($id)
+    {
+        $order  = Order::query()->find($id);
+        $order->delete();
+        return $this->sendApiResponse('', 'Order deleted successfully');
+
+    }
+
     /**
      * @param $value
      * @return string
