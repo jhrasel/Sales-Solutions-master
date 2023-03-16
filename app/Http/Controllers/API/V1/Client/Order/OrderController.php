@@ -360,10 +360,10 @@ class OrderController extends Controller
         if($value === Order::CANCELLED) {
             return Order::CANCELLED;
         }
-        if($$value === Order::RETURNED) {
+        if($value === Order::RETURNED) {
             return Order::RETURNED;
         }
-        if($$value === Order::SHIPPED) {
+        if($value === Order::SHIPPED) {
             return Order::SHIPPED;
         }
         if($value === Order::DELIVERED) {
