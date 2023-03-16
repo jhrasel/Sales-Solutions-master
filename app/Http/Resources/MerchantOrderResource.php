@@ -30,6 +30,11 @@ class MerchantOrderResource extends JsonResource
         $note = OrderNote::query()->where('order_id', $this->resource->id)->where('type', $status)->first();
         $date = OrderDate::query()->where('order_id', $this->resource->id)->where('type', $status)->first();
 
+        if ($this->resource->pricing->discount_type === Order::PERCENT && $this->resource->pricing->discount_type > 0) {
+            $discounted_total = ceil($this->resource->pricing->grand_total - ($this->resource->pricing->grand_total * ($this->resource->pricing->discount / 100)));
+        } else {
+            $discounted_total = $this->resource->pricing->grand_total - $this->resource->pricing->discount;
+        }
         return [
             'id' => $this->resource->id,
             'order_no' => (int)$this->resource->order_no,
@@ -40,6 +45,7 @@ class MerchantOrderResource extends JsonResource
             'order_status' => $this->resource->order_status,
             'cod' => $this->resource->cod === 1,
             'grand_total' => $this->resource->pricing->grand_total,
+            'discounted_total' => $discounted_total,
             'advanced' => $this->resource->pricing->advanced,
             'due' => (int)$this->resource->pricing->due,
             'shipping_cost' => $this->resource->pricing->shipping_cost,

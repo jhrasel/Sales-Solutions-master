@@ -313,17 +313,20 @@ class OrderController extends Controller
     {
         $order_pricing = OrderPricing::query()->where('order_id', $id)->first();
 
-        if(Str::contains('%', $request->input('discount'))) {
+        if(Str::contains($request->input('discount'), '%')) {
+
             $discount = Str::replace('%', '', $request->input('discount'));
             $type = Order::PERCENT;
             $due = ceil($order_pricing->due - ($order_pricing->due * ($discount / 100)));
+
         } else {
+            $discount = $request->input('discount');
             $type = Order::AMOUNT;
             $due = ceil($order_pricing->due - $request->input('discount'));
         }
 
         $order_pricing->update([
-            'discount' => $request->input('discount'),
+            'discount' => $discount,
             'discount_type' => $type,
             'due' => $due,
         ]);
