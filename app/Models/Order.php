@@ -35,6 +35,7 @@ class Order extends Model
     public const CANCELLED = 'cancelled';
     public const CONFIRMED = 'confirmed';
     public const RETURNED = 'returned';
+    public const SHIPPED = 'shipped';
     public const DELIVERED = 'delivered';
 
     public function order_details(): HasMany

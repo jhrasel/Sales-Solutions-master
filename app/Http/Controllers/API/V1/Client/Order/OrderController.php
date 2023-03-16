@@ -216,6 +216,9 @@ class OrderController extends Controller
         if($request->input('status') === Order::RETURNED) {
             $order->order_status = $request->input('status');
         }
+        if($request->input('status') === Order::SHIPPED) {
+            $order->order_status = $request->input('status');
+        }
         if($request->input('status') === Order::DELIVERED) {
             $order->order_status = $request->input('status');
         }
