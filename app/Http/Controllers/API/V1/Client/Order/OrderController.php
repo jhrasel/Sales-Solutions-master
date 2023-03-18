@@ -18,6 +18,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
+
 class OrderController extends Controller
 {
     /**
@@ -334,12 +335,14 @@ class OrderController extends Controller
 
             $discount = Str::replace('%', '', $request->input('discount'));
             $type = Order::PERCENT;
-            $due = ceil($order_pricing->due - ($order_pricing->due * ($discount / 100)));
+            $amount = ceil($order_pricing->grand_total - ($order_pricing->grand_total * ($discount / 100)));
+            $due = ceil($amount - $order_pricing->advanced);
 
         } else {
             $discount = $request->input('discount');
             $type = Order::AMOUNT;
-            $due = ceil($order_pricing->due - $request->input('discount'));
+            $amount = ceil($order_pricing->grand_total - $request->input('discount'));
+            $due = ceil($amount - $order_pricing->advanced);
         }
 
         $order_pricing->update([
