@@ -46,6 +46,8 @@ class MerchantOrderResource extends JsonResource
             'cod' => $this->resource->cod === 1,
             'grand_total' => $this->resource->pricing->grand_total,
             'discounted_total' => $discounted_total,
+            'discount' => $this->resource->pricing->discount,
+            'discount_type' => $this->resource->pricing->discount_type,
             'advanced' => $this->resource->pricing->advanced,
             'due' => (int)$this->resource->pricing->due,
             'shipping_cost' => $this->resource->pricing->shipping_cost,

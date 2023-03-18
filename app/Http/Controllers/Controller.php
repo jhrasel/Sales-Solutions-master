@@ -25,7 +25,6 @@ class Controller extends BaseController
              }
              return $request;
          }
-         abort(404, 'Please add valid shop id to request headers');
 
     }
 

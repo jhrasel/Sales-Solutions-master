@@ -172,12 +172,28 @@ class OrderController extends Controller
      * Update the specified resource in storage.
      *
      * @param Request $request
-     * @param int $id
-     * @return Response
+     * @param $id
+     * @return JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id): JsonResponse
     {
-        //
+        $order = Order::query()->with('order_details', 'pricing')->find($id);
+        $order->update([
+            'customer_name' => $request->input('customer_name'),
+            'phone' => $request->input('customer_phone'),
+            'address' => $request->input('customer_address'),
+        ]);
+
+        if ($request->filled('grand_total')) {
+
+            $due = ceil($request->filled('grand_total') - $order->pricing->advanced);
+            $order->pricing()->update([
+                'grand_total' => $request->input('grand_total'),
+                'due' => $due
+            ]);
+        }
+
+        return $this->sendApiResponse(new MerchantOrderResource($order));
     }
 
     /**
@@ -309,6 +325,7 @@ class OrderController extends Controller
         return $this->sendApiResponse($note, 'Date updated for '.$type. ' order');
     }
 
+
     public function updateDiscount(Request $request, $id): JsonResponse
     {
         $order_pricing = OrderPricing::query()->where('order_id', $id)->first();
@@ -334,7 +351,7 @@ class OrderController extends Controller
         return $this->sendApiResponse($order_pricing, 'Discount added successfully');
     }
 
-    public function delete($id)
+    public function delete($id): JsonResponse
     {
         $order  = Order::query()->find($id);
         $order->delete();
