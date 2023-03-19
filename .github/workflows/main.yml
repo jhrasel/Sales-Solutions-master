@@ -16,7 +16,7 @@ jobs:
       - name: FTP-Deploy-Action
         uses: SamKirkland/FTP-Deploy-Action@4.3.2
         with:
-          server: ftp.dev.funnelliner.com
+          server: 103.125.254.54
           username: main@dev.funnelliner.com
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
