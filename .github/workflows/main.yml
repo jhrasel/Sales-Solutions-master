@@ -24,6 +24,7 @@ jobs:
           server: ftp.dev.funnelliner.com
           username: main@dev.funnelliner.com
           password: 6Th@;_j=-rft
+          port: 21
           exclude: |
             **/.git*
             **/.git*/**
