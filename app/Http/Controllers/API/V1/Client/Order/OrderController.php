@@ -33,7 +33,7 @@ class OrderController extends Controller
     {
         $orders = Order::with('order_details', 'pricing')
             ->where('shop_id', $request->header('shop-id'))
-            ->orderByDesc('id')
+            ->orderByDesc('updated_at')
             ->get();
 
         if (!$orders) {
