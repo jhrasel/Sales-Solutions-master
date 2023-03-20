@@ -33,61 +33,61 @@ class SettingController extends MerchantBaseController
 
     public function business_info_update(MerchantSettingRequest $request): JsonResponse
     {
-            $merchant = User::query()->where('role', 'merchant')->find($request->header('id'));
-            if (!$merchant) {
-                return response()->json([
-                    'success' => false,
-                    'msg' => 'Merchant not Found',
-                ], 404);
-            }
-
-            $shop = Shop::query()->where('shop_id', $request->header('shop-id'))->first();
-            $shop->name = $request->input('shop_name');
-            $shop->address = $request->input('shop_address');
-            $shop->email = $request->input('email');
-            $shop->phone = $request->input('phone');
-		    $shop->about_us = $request->input('about_us');
-		    $shop->tos = $request->input('tos');
-		    $shop->privacy_policy = $request->input('privacy_policy');
-            $shop->shop_id = $request->header('shop-id');
-            $shop->shop_meta_title = $request->input('shop_meta_title');
-            $shop->shop_meta_description = $request->input('shop_meta_description');
-            $shop->save();
-            
-            //store shop favicon
-            if ($request->hasFile('shop_favicon')) {
-
-                $mainImageName = time() . '_shop_favicon.' . $request->file('shop_favicon')->getClientOriginalExtension();
-
-                $request->shop_favicon->move(public_path('images'), $mainImageName);
-                $media = new Media();
-                $media->name = '/images/' . $mainImageName;
-                $media->parent_id = $shop->id;
-                $media->type = 'shop_favicon';
-                $media->save();
-
-                $shop['favicon'] = $media->name;
-            }
-            //store shop logo
-            if ($request->hasFile('shop_logo')) {
-
-                $mainImageName = time() . '_shop_logo.' . $request->file('shop_logo')->getClientOriginalExtension();
-
-                $request->shop_logo->move(public_path('images'), $mainImageName);
-                $media = new Media();
-                $media->name = '/images/' . $mainImageName;
-                $media->parent_id = $shop->id;
-                $media->type = 'shop_logo';
-                $media->save();
-
-                $shop['logo'] = $media->name;
-            }
-
+        $merchant = User::query()->where('role', 'merchant')->find($request->header('id'));
+        if (!$merchant) {
             return response()->json([
-                'success' => true,
-                'msg' => 'Merchant setting business information update successfully',
-                'data' => $shop,
-            ], 200);
+                'success' => false,
+                'msg' => 'Merchant not Found',
+            ], 404);
+        }
+
+        $shop = Shop::query()->where('shop_id', $request->header('shop-id'))->first();
+        $shop->name = $request->input('shop_name');
+        $shop->address = $request->input('shop_address');
+        $shop->email = $request->input('email');
+        $shop->phone = $request->input('phone');
+        $shop->about_us = $request->input('about_us');
+        $shop->tos = $request->input('tos');
+        $shop->privacy_policy = $request->input('privacy_policy');
+        $shop->shop_id = $request->header('shop-id');
+        $shop->shop_meta_title = $request->input('shop_meta_title');
+        $shop->shop_meta_description = $request->input('shop_meta_description');
+        $shop->save();
+
+        //store shop favicon
+        if ($request->hasFile('shop_favicon')) {
+
+            $mainImageName = time() . '_shop_favicon.' . $request->file('shop_favicon')->getClientOriginalExtension();
+
+            $request->shop_favicon->move(public_path('images'), $mainImageName);
+            $media = new Media();
+            $media->name = '/images/' . $mainImageName;
+            $media->parent_id = $shop->id;
+            $media->type = 'shop_favicon';
+            $media->save();
+
+            $shop['favicon'] = $media->name;
+        }
+        //store shop logo
+        if ($request->hasFile('shop_logo')) {
+
+            $mainImageName = time() . '_shop_logo.' . $request->file('shop_logo')->getClientOriginalExtension();
+
+            $request->shop_logo->move(public_path('images'), $mainImageName);
+            $media = new Media();
+            $media->name = '/images/' . $mainImageName;
+            $media->parent_id = $shop->id;
+            $media->type = 'shop_logo';
+            $media->save();
+
+            $shop['logo'] = $media->name;
+        }
+
+        return response()->json([
+            'success' => true,
+            'msg' => 'Merchant setting business information update successfully',
+            'data' => $shop,
+        ], 200);
     }
 
     public function owner_info_update(MerchantSettingRequest $request)
@@ -434,7 +434,7 @@ class SettingController extends MerchantBaseController
             if (!$merchant) {
                 return response()->json([
                     'success' => false,
-                    'msg' =>  'Merchant not Found',
+                    'msg' => 'Merchant not Found',
                 ], 404);
             }
 
@@ -448,7 +448,7 @@ class SettingController extends MerchantBaseController
             return response()->json([
                 'success' => true,
                 'msg' => 'Domain request successfully added.',
-                'data' =>    $shop,
+                'data' => $shop,
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -500,7 +500,7 @@ class SettingController extends MerchantBaseController
     {
         $advanced_pay_status = WebsiteSetting::query()->where('shop_id', request()->header('shop-id'))->first();
 
-        if(!$advanced_pay_status) {
+        if (!$advanced_pay_status) {
             return $this->sendApiResponse('', 'No data found with this', 'NotFound');
         }
         return $this->sendApiResponse(new AdvancePaymentResource($advanced_pay_status));

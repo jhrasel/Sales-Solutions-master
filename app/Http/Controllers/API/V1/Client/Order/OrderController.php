@@ -4,12 +4,14 @@ namespace App\Http\Controllers\API\V1\Client\Order;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderRequest;
+use App\Http\Resources\InvoiceOrderResource;
 use App\Http\Resources\MerchantOrderResource;
 use App\Models\OrderDate;
 use App\Models\OrderNote;
 use App\Models\OrderPricing;
 use App\Models\Shop;
 use App\Models\Product;
+use App\Models\WebsiteSetting;
 use App\Services\Sms;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
@@ -185,12 +187,32 @@ class OrderController extends Controller
             'address' => $request->input('customer_address'),
         ]);
 
-        if ($request->filled('grand_total')) {
+        $grand_total =  $order->pricing->grand_total;
+        $due =  $order->pricing->due;
 
-            $due = ceil($request->filled('grand_total') - $order->pricing->advanced);
+        if($request->has('product_id')) {
+            foreach ($request->input('product_id') as $key => $item) {
+
+                $product = Product::query()->find($item);
+
+                $order->order_details()->create([
+                    'product_id' => $item,
+                    'product_qty' => $request->input('product_qty')[$key],
+                    'unit_price' => $product->price,
+                ]);
+
+                $grand_total += $product->price;
+                $due += $product->price;
+
+            }
+        }
+
+        if ($request->filled('shipping_cost')) {
+            $grand_total += $request->input('shipping_cost');
             $order->pricing()->update([
-                'grand_total' => $request->input('grand_total'),
-                'due' => $due
+                'grand_total' => $request->input('shipping_cost'),
+                'due' => $due,
+                'shipping_cost' => $request->input('shipping_cost'),
             ]);
         }
 
@@ -265,11 +287,14 @@ class OrderController extends Controller
             ->where('shop_id', $request->header('shop-id'))
             ->first();
 
+        $shop = WebsiteSetting::query()->where('shop_id', $request->header('shop-id'))->first();
+
+        $order['shop'] = $shop;
         if (!$order) {
             return $this->sendApiResponse('', 'Order Not found', 'NotFound');
         }
 
-        return $this->sendApiResponse(new MerchantOrderResource($order));
+        return $this->sendApiResponse(new InvoiceOrderResource($order));
     }
 
     public function updateFollowup(Request $request, $id): JsonResponse
