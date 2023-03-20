@@ -19,6 +19,7 @@ class OrderDetailsResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'product_id' => $this->product->id ?? null,
             'product'=> $this->product->product_name ?? null,
             'price'=> $this->product->price ?? null,
             'quantity'=> $this->product_qty,

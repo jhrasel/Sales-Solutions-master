@@ -69,7 +69,7 @@ class OrderController extends Controller
 
     public function store(OrderRequest $request): JsonResponse
     {
-        return DB::transaction(function() use ($request) {
+        return DB::transaction(function () use ($request) {
 
             $order = Order::query()->create([
                 'order_no' => rand(100, 9999),
@@ -180,43 +180,45 @@ class OrderController extends Controller
      */
     public function update(Request $request, $id): JsonResponse
     {
-        $order = Order::query()->with('order_details', 'pricing')->find($id);
-        $order->update([
-            'customer_name' => $request->input('customer_name'),
-            'phone' => $request->input('customer_phone'),
-            'address' => $request->input('customer_address'),
-        ]);
-
-        $grand_total =  $order->pricing->grand_total;
-        $due =  $order->pricing->due;
-
-        if($request->has('product_id')) {
-            foreach ($request->input('product_id') as $key => $item) {
-
-                $product = Product::query()->find($item);
-
-                $order->order_details()->create([
-                    'product_id' => $item,
-                    'product_qty' => $request->input('product_qty')[$key],
-                    'unit_price' => $product->price,
-                ]);
-
-                $grand_total += $product->price;
-                $due += $product->price;
-
-            }
-        }
-
-        if ($request->filled('shipping_cost')) {
-            $grand_total += $request->input('shipping_cost');
-            $order->pricing()->update([
-                'grand_total' => $request->input('shipping_cost'),
-                'due' => $due,
-                'shipping_cost' => $request->input('shipping_cost'),
+        return DB::transaction(function () use ($request) {
+            $order = Order::query()->with('order_details', 'pricing')->find($id);
+            $order->update([
+                'customer_name' => $request->input('customer_name'),
+                'phone' => $request->input('customer_phone'),
+                'address' => $request->input('customer_address'),
             ]);
-        }
 
-        return $this->sendApiResponse(new MerchantOrderResource($order));
+            $grand_total = $order->pricing->grand_total;
+            $due = $order->pricing->due;
+
+            if ($request->input('product_id') != null) {
+                foreach ($request->input('product_id') as $key => $item) {
+
+                    $product = Product::query()->find($item);
+
+                    $order->order_details()->create([
+                        'product_id' => $item,
+                        'product_qty' => $request->input('product_qty')[$key],
+                        'unit_price' => $product->price,
+                    ]);
+
+                    $grand_total += $product->price;
+                    $due += $product->price;
+
+                }
+            }
+
+            if ($request->filled('shipping_cost')) {
+                $grand_total += $request->input('shipping_cost');
+                $order->pricing()->update([
+                    'grand_total' => $grand_total,
+                    'due' => $due,
+                    'shipping_cost' => $request->input('shipping_cost'),
+                ]);
+            }
+
+            return $this->sendApiResponse(new MerchantOrderResource($order));
+        });
     }
 
     /**
@@ -231,9 +233,9 @@ class OrderController extends Controller
     }
 
     /**
-     * @property string $order_status
      * @param OrderRequest $request
      * @return JsonResponse
+     * @property string $order_status
      */
     public function order_status_update(OrderRequest $request): JsonResponse
     {
@@ -245,22 +247,22 @@ class OrderController extends Controller
             return $this->sendApiResponse('', 'Order Not Found', 'NotFound');
         }
 
-        if($request->input('status') === Order::CONFIRMED) {
+        if ($request->input('status') === Order::CONFIRMED) {
             $order->order_status = $request->input('status');
         }
-        if($request->input('status') === Order::FOLLOWUP) {
+        if ($request->input('status') === Order::FOLLOWUP) {
             $order->order_status = $request->input('status');
         }
-        if($request->input('status') === Order::CANCELLED) {
+        if ($request->input('status') === Order::CANCELLED) {
             $order->order_status = $request->input('status');
         }
-        if($request->input('status') === Order::RETURNED) {
+        if ($request->input('status') === Order::RETURNED) {
             $order->order_status = $request->input('status');
         }
-        if($request->input('status') === Order::SHIPPED) {
+        if ($request->input('status') === Order::SHIPPED) {
             $order->order_status = $request->input('status');
         }
-        if($request->input('status') === Order::DELIVERED) {
+        if ($request->input('status') === Order::DELIVERED) {
             $order->order_status = $request->input('status');
         }
         $order->save();
@@ -314,7 +316,7 @@ class OrderController extends Controller
         $order = Order::query()->with('order_details', 'pricing')->find($id);
         $order->pricing->update([
             'due' => abs($order->pricing->grand_total - $request->input('advanced')),
-           'advanced' => $request->input('advanced')
+            'advanced' => $request->input('advanced')
         ]);
         return $this->sendApiResponse(new MerchantOrderResource($order), 'Advance payment updated');
     }
@@ -322,7 +324,7 @@ class OrderController extends Controller
     public function noteUpdateByStatus(Request $request, $id): JsonResponse
     {
         $type = $this->checkStatusValidity($request->input('type'));
-        if($type === false) {
+        if ($type === false) {
             return $this->sendApiResponse('', 'Please add valid Status type');
         }
         $note = OrderNote::query()->updateOrCreate([
@@ -332,13 +334,13 @@ class OrderController extends Controller
             'note' => $request->input('note'),
         ]);
 
-        return $this->sendApiResponse($note, 'Note updated for '.$request->input('type'). ' order');
+        return $this->sendApiResponse($note, 'Note updated for ' . $request->input('type') . ' order');
     }
 
     public function dateUpdateByStatus(Request $request, $id): JsonResponse
     {
         $type = $this->checkStatusValidity($request->input('type'));
-        if($type === false) {
+        if ($type === false) {
             return $this->sendApiResponse('', 'Please add valid Status type');
         }
         $note = OrderDate::query()->updateOrCreate([
@@ -348,7 +350,7 @@ class OrderController extends Controller
             'date' => $request->input('date'),
         ]);
 
-        return $this->sendApiResponse($note, 'Date updated for '.$type. ' order');
+        return $this->sendApiResponse($note, 'Date updated for ' . $type . ' order');
     }
 
 
@@ -356,7 +358,7 @@ class OrderController extends Controller
     {
         $order_pricing = OrderPricing::query()->where('order_id', $id)->first();
 
-        if(Str::contains($request->input('discount'), '%')) {
+        if (Str::contains($request->input('discount'), '%')) {
 
             $discount = Str::replace('%', '', $request->input('discount'));
             $type = Order::PERCENT;
@@ -381,7 +383,7 @@ class OrderController extends Controller
 
     public function delete($id): JsonResponse
     {
-        $order  = Order::query()->find($id);
+        $order = Order::query()->find($id);
         $order->delete();
         return $this->sendApiResponse('', 'Order deleted successfully');
 
@@ -393,25 +395,25 @@ class OrderController extends Controller
      */
     public function checkStatusValidity($value): string
     {
-        if($value === Order::PENDING) {
+        if ($value === Order::PENDING) {
             return Order::PENDING;
         }
-        if($value === Order::CONFIRMED) {
+        if ($value === Order::CONFIRMED) {
             return Order::CONFIRMED;
         }
-        if($value === Order::FOLLOWUP) {
+        if ($value === Order::FOLLOWUP) {
             return Order::FOLLOWUP;
         }
-        if($value === Order::CANCELLED) {
+        if ($value === Order::CANCELLED) {
             return Order::CANCELLED;
         }
-        if($value === Order::RETURNED) {
+        if ($value === Order::RETURNED) {
             return Order::RETURNED;
         }
-        if($value === Order::SHIPPED) {
+        if ($value === Order::SHIPPED) {
             return Order::SHIPPED;
         }
-        if($value === Order::DELIVERED) {
+        if ($value === Order::DELIVERED) {
             return Order::DELIVERED;
         }
         return false;
