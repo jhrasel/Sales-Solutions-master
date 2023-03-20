@@ -180,7 +180,7 @@ class OrderController extends Controller
      */
     public function update(Request $request, $id): JsonResponse
     {
-        return DB::transaction(function () use ($request) {
+        return DB::transaction(function () use ($request, $id) {
             $order = Order::query()->with('order_details', 'pricing')->find($id);
             $order->update([
                 'customer_name' => $request->input('customer_name'),
