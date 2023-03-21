@@ -290,9 +290,10 @@ class OrderController extends Controller
             ->where('shop_id', $request->header('shop-id'))
             ->first();
 
-        $shop = WebsiteSetting::query()->where('shop_id', $request->header('shop-id'))->first();
+        $shop = Shop::query()->where('shop_id', $request->header('shop-id'))->first();
 
         $order['shop'] = $shop;
+
         if (!$order) {
             return $this->sendApiResponse('', 'Order Not found', 'NotFound');
         }

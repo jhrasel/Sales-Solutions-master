@@ -60,4 +60,5 @@ class Order extends Model
         return $this->hasOne(OrderConfig::class);
     }
 
+
 }
