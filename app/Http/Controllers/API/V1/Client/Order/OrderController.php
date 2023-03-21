@@ -182,6 +182,7 @@ class OrderController extends Controller
     {
         return DB::transaction(function () use ($request, $id) {
             $order = Order::query()->with('order_details', 'pricing')->find($id);
+
             $order->update([
                 'customer_name' => $request->input('customer_name'),
                 'phone' => $request->input('customer_phone'),
@@ -192,19 +193,19 @@ class OrderController extends Controller
             $due = $order->pricing->due;
 
             if ($request->input('product_id') != null) {
-                foreach ($request->input('product_id') as $key => $item) {
 
+                foreach ($request->input('product_id') as $key => $item) {
                     $product = Product::query()->find($item);
 
-                    $order->order_details()->create([
+                    $order->order_details()->updateOrCreate([
                         'product_id' => $item,
-                        'product_qty' => $request->input('product_qty')[$key],
+                        'product_qty' => 1,
+                    ], [
                         'unit_price' => $product->price,
                     ]);
 
                     $grand_total += $product->price;
                     $due += $product->price;
-
                 }
             }
 
