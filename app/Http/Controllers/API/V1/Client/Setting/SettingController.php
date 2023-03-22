@@ -490,6 +490,12 @@ class SettingController extends MerchantBaseController
         ]);
 
         $shop = WebsiteSetting::query()->where('shop_id', $request->header('shop-id'))->first();
+        if (!$shop) {
+            $shop = WebsiteSetting::query()->create([
+                'user_id' => $request->header('id'),
+                'shop_id' => $request->header('shop-id'),
+            ]);
+        }
         $shop->advanced_payment = $request->input('status');
         $shop->save();
 
