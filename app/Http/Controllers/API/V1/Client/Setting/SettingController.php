@@ -489,9 +489,9 @@ class SettingController extends MerchantBaseController
             'status' => 'required'
         ]);
 
-        $shop = WebsiteSetting::query()->where('shop_id', $request->header('shop-id'))->update([
-            'advanced_payment' => $request->input('status')
-        ]);
+        $shop = WebsiteSetting::query()->where('shop_id', $request->header('shop-id'))->first();
+        $shop->advanced_payment = $request->input('status');
+        $shop->save();
 
         return $this->sendApiResponse('', 'status updated successfully');
     }
