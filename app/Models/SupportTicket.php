@@ -38,11 +38,12 @@ class SupportTicket extends Model
         return Carbon::parse($value)->toFormattedDateString();
     }
 
-    public function getShopIdAttribute(): string
+    public function getShopIdAttribute()
     {
         if ($this->relationLoaded('merchant')) {
             return Shop::query()->where('user_id', $this['user_id'])->pluck('shop_id')->first();
         }
+return null;
     }
 
     public function merchant(): BelongsTo
