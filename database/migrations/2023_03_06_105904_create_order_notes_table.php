@@ -17,7 +17,7 @@ class CreateOrderNotesTable extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->string('type');
-            $table->string('note');
+            $table->string('note')->nullable();
             $table->timestamps();
         });
     }
