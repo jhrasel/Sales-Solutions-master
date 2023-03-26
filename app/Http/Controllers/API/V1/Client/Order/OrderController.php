@@ -316,18 +316,18 @@ class OrderController extends Controller
     public function advancePayment(Request $request, $id): JsonResponse
     {
         $order = Order::query()->with('order_details', 'pricing')->find($id);
-        
+
         if (Str::contains($order->pricing->discount_type, 'percent')) {
-        $order->pricing->update([
-            'due' => abs($order->pricing->grand_total - ($order->pricing->grand_total * ($order->pricing->discount / 100)) - $request->input('advanced')),
-            'advanced' => $request->input('advanced')
-        ]);
+            $order->pricing->update([
+                'due' => abs($order->pricing->grand_total - ($order->pricing->grand_total * ($order->pricing->discount / 100)) - $request->input('advanced')),
+                'advanced' => $request->input('advanced')
+            ]);
         } else {
-        $order->pricing->update([
-            'due' => abs($order->pricing->grand_total - $order->pricing->discount - $request->input('advanced')),
-            'advanced' => $request->input('advanced')
-        ]);
-        }    
+            $order->pricing->update([
+                'due' => abs($order->pricing->grand_total - $order->pricing->discount - $request->input('advanced')),
+                'advanced' => $request->input('advanced')
+            ]);
+        }
         return $this->sendApiResponse(new MerchantOrderResource($order), 'Advance payment updated');
     }
 
