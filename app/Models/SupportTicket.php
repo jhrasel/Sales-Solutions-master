@@ -35,7 +35,7 @@ class SupportTicket extends Model
 
     public function getCreatedAtAttribute($value): string
     {
-        return Carbon::parse($value)->toFormattedDateString();
+        return Carbon::parse($value)->isoFormat('MMMM Do YYYY, h:mm:ss a');
     }
 
     public function getShopIdAttribute()
