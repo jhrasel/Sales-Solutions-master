@@ -35,12 +35,12 @@ class SupportTicket extends Model
 
     public function getCreatedAtAttribute($value): string
     {
-        return Carbon::parse($value)->timezone('Asia/Dhaka')->isoFormat('MMMM Do YYYY, h:mm a');
+        return Carbon::parse($value)->timezone('Asia/Dhaka')->isoFormat('Do MMMM YYYY, h:mm a');
     }
 
     public function getUpdatedAtAttribute($value): string
     {
-        return Carbon::parse($value)->timezone('Asia/Dhaka')->isoFormat('MMMM Do YYYY, h:mm a');
+        return Carbon::parse($value)->timezone('Asia/Dhaka')->isoFormat('Do MMMM YYYY, h:mm a');
     }
 
     public function getShopIdAttribute()
