@@ -24,6 +24,7 @@ class User extends Authenticatable
     const STATUS_BLOCKED = 'blocked';
     const STATUS_ACTIVE = 'active';
     const STATUS_INACTIVE = 'inactive';
+    const STATUS_EXPIRED = 'expired';
 
 
     /**
@@ -115,7 +116,7 @@ class User extends Authenticatable
      */
     public function getCreatedAtAttribute($value): string
     {
-        return Carbon::parse($value)->toFormattedDateString();
+        return Carbon::parse($value)->isoFormat('Do MMMM YYYY, h:mm a');
     }
 
     public function shop(): HasOne

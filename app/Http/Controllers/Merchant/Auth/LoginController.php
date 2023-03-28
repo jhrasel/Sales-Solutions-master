@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\Shop;
 use App\Services\Sms;
 use App\Traits\sendApiResponse;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
@@ -112,6 +113,14 @@ class LoginController extends MerchantBaseController
             ->first();
 
         if($user && Hash::check($request->input('password'), $user->password)) {
+
+            $date = diffrenceDate($user->getRawOriginal('created_at'));
+
+            if($date) {
+                $user->status = User::STATUS_EXPIRED;
+                $user->save();
+                return $this->sendApiResponse('', 'Sorry Your trial period has expired', 'Unauthorized');
+            }
             $token = $this->generateToken($user->id, $request->header('ipaddress'), $request->header('browsername'));
             return $this->sendApiResponse(new MerchantResource($user), 'Successfully logged in', '', ['token' => $token]);
         } else {

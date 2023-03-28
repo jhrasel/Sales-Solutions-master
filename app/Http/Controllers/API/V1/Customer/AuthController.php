@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API\V1\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Shop;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -80,7 +81,7 @@ class AuthController extends Controller
 
     }
 
-    public function login(Request $request)
+    public function login(Request $request): JsonResponse
     {
         $request->validate([
             'credentials' => 'required',
@@ -102,7 +103,7 @@ class AuthController extends Controller
                         return $query->where('merchant_id', $shop->user_id);
                     })->first();
                 if ($user) {
-                    if($request->input('otp') && $user->otp === $request->input('otp')) {
+                    if ($request->input('otp') && $user->otp === $request->input('otp')) {
                         $user->createApiToken();
                         return response()->json($user);
                     } else {
@@ -110,7 +111,6 @@ class AuthController extends Controller
                         $user->save();
                         return response()->json(['message' => 'Otp Has been sent to your mobile']);
                     }
-                    return response()->json(['message' => 'Invalid Credentials']);
                 }
 
                 return response()->json(['message' => 'Invalid Credentials']);
@@ -123,7 +123,7 @@ class AuthController extends Controller
                     })->first();
 
                 if ($user) {
-                    if($request->input('otp') && $user->otp === $request->input('otp')) {
+                    if ($request->input('otp') && $user->otp === $request->input('otp')) {
                         $user->createApiToken();
                         return response()->json($user);
                     } else {
@@ -131,12 +131,12 @@ class AuthController extends Controller
                         $user->save();
                         return response()->json(['message' => 'Otp Has been sent to your email']);
                     }
-                    return response()->json(['message' => 'Invalid Credentials']);
                 }
 
                 return response()->json(['message' => 'User already exists with this email']);
             }
 
         }
+        return response()->json(['message' => 'Invalid Credentials']);
     }
 }

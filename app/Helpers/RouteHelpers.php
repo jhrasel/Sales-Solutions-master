@@ -21,3 +21,14 @@ function activeMenu($uri = ''): string
     }
     return $active;
 }
+
+function diffrenceDate($date)
+{
+    $added_day_time = \Carbon\Carbon::parse($date)->timezone('Asia/Dhaka')->addDay();
+    $current_date = \Carbon\Carbon::now()->timezone('Asia/Dhaka');
+
+    if ($current_date->gte($added_day_time)) {
+        return true;
+    }
+    return false;
+}
