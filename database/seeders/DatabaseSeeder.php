@@ -41,21 +41,6 @@ class DatabaseSeeder extends Seeder
             ]);
         });
 
-        $merchant = User::query()->where('role', 'merchant')->pluck('id');
-
-
-        User::factory(10)->customer()->create()->each(function (User $user) use ($merchant) {
-
-            CustomerInfo::query()->create([
-                'user_id' => $user->id,
-                'merchant_id' => $this->faker->randomElement($merchant)
-            ]);
-
-        });
-
-
-
-//        User::factory(10)->staff()->create();
 
 
         $roles = [

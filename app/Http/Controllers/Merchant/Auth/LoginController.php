@@ -108,7 +108,6 @@ class LoginController extends MerchantBaseController
         $user = User::query()->with('shop')
             ->where('role', User::MERCHANT)
             ->where('email', $request->input('email'))
-            ->where('status', User::STATUS_ACTIVE)
             ->orWhere('phone', User::normalizePhone($request->input('email')))
             ->orWhere('phone', User::removeCode($request->input('email')))
             ->first();
@@ -117,7 +116,7 @@ class LoginController extends MerchantBaseController
 
             $date = diffrenceDate($user->getRawOriginal('created_at'));
 
-            if($date) {
+            if($user->payment_status == User::UNPAID && $date) {
                 $user->status = User::STATUS_EXPIRED;
                 $user->save();
                 return $this->sendApiResponse('', 'Sorry Your trial period has expired', 'Unauthorized');

@@ -11,35 +11,33 @@ use App\Models\OrderNote;
 use App\Models\OrderPricing;
 use App\Models\Shop;
 use App\Models\Product;
-use App\Models\WebsiteSetting;
+use App\Services\OrderService;
 use App\Services\Sms;
 use App\Models\Order;
+use App\Traits\sendApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
+/**
+ * @property OrderService $orderService
+ */
 
 class OrderController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
+    use sendApiResponse;
+    public function __construct(OrderService $orderService)
+    {
+        $this->orderService = $orderService;
+    }
+
+
     public function index(Request $request): JsonResponse
     {
-        $orders = Order::with('order_details', 'pricing')
-            ->where('shop_id', $request->header('shop-id'))
-            ->orderByDesc('updated_at')
-            ->get();
-
-        if (!$orders) {
-            return $this->sendApiResponse('', 'Orders not found', 'NotFound');
-        }
-        return $this->sendApiResponse(MerchantOrderResource::collection($orders));
+        $data = $this->orderService->index($request);
+        return $this->sendApiResponse(MerchantOrderResource::collection($data));
 
     }
 

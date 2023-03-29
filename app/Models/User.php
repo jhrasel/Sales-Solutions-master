@@ -26,6 +26,9 @@ class User extends Authenticatable
     const STATUS_INACTIVE = 'inactive';
     const STATUS_EXPIRED = 'expired';
 
+    const PAID = 'paid';
+    const UNPAID = 'unpaid';
+
 
     /**
      * The attributes that are mass assignable.
