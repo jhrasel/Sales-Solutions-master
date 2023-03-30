@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -39,6 +40,11 @@ class Order extends Model
     public const DELIVERED = 'delivered';
     public const AMOUNT = 'amount';
     public const PERCENT = 'percent';
+
+    public function getCreatedAtAttribute($value): string
+    {
+        return Carbon::parse($value)->diffForHumans();
+    }
 
     public function order_details(): HasMany
     {
