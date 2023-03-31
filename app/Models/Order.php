@@ -41,11 +41,6 @@ class Order extends Model
     public const AMOUNT = 'amount';
     public const PERCENT = 'percent';
 
-    public function getCreatedAtAttribute($value): string
-    {
-        return Carbon::parse($value)->diffForHumans();
-    }
-
     public function order_details(): HasMany
     {
         return $this->hasMany(OrderDetails::class)->with('product');

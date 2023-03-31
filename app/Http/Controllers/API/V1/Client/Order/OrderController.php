@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpMissingParentConstructorInspection */
 
 namespace App\Http\Controllers\API\V1\Client\Order;
 
@@ -18,6 +18,7 @@ use App\Traits\sendApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -28,6 +29,11 @@ use Illuminate\Support\Str;
 class OrderController extends Controller
 {
     use sendApiResponse;
+
+    /**
+     * OrderController constructor.
+     * @param OrderService $orderService
+     */
     public function __construct(OrderService $orderService)
     {
         $this->orderService = $orderService;
@@ -38,7 +44,6 @@ class OrderController extends Controller
     {
         $data = $this->orderService->index($request);
         return $this->sendApiResponse(MerchantOrderResource::collection($data));
-
     }
 
     public function order($id): JsonResponse

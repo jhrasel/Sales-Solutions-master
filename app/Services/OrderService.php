@@ -3,7 +3,6 @@
 
 namespace App\Services;
 
-
 use App\Models\Order;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
