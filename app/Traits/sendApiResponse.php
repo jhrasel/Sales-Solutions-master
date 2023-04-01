@@ -20,7 +20,8 @@ trait sendApiResponse {
             'success' => $errorType === '',
             'error_type' => $errorType,
         ] + $extra;
-
+        
+        dd($data);
         if($data instanceof LengthAwarePaginator) {
             $response += $data->toArray();
         } elseif ($data->has('resource') && $data->resource instanceof LengthAwarePaginator || $data instanceof ResourceCollection) {
